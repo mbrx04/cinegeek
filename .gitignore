@@ -43,3 +43,6 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
+
+# File contenente le chiavi API personali (non deve essere caricato su GitHub)
+lib/api_keys.dart
