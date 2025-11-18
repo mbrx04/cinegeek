@@ -4,61 +4,45 @@ name: cinegeek
 # Breve descrizione del progetto
 description: "CineGeek - App context-aware per cinema e recensioni film"
 
-# Impedisce la pubblicazione automatica su pub.dev (utile per progetti universitari)
 publish_to: 'none'
 
-# Versione dell'app (nome versione + numero build)
 version: 1.0.0+1
 
-# Impostazione della versione minima e massima del Dart SDK supportata
-# Dart 3.3.0 o superiore, ma inferiore alla futura major 4.0.0
 environment:
   sdk: ">=3.3.0 <4.0.0"
 
-# Sezione delle dipendenze principali del progetto
 dependencies:
-  # SDK Flutter
   flutter:
     sdk: flutter
 
-  # Icone in stile iOS (pacchetto ufficiale Cupertino)
   cupertino_icons: ^1.0.8
-
-  # Libreria per effettuare richieste HTTP (usata per TMDB API o simili)
   http: ^1.2.2
-
-  # Pacchetto per accedere ai servizi di geolocalizzazione (posizione GPS)
   geolocator: ^12.0.0
-
-  # Pacchetto per leggere i sensori del dispositivo (es. luminosità)
   sensors_plus: ^6.0.1
-
-  # Pacchetto per gestire notifiche locali (es. quando l'utente entra in un cinema)
   flutter_local_notifications: ^17.1.2
-
-  # Database locale SQLite (utile per salvare film, recensioni, profilo)
   sqflite: ^2.3.3
-
-  # Libreria per gestire i percorsi dei file, necessaria con sqflite
   path: ^1.9.0
-
-  # Gestione dello stato globale dell'applicazione (più semplice da usare)
   provider: ^6.1.2
   circle_nav_bar: ^2.2.0
+  flutter_launcher_icons: ^0.14.4
+  cupertino_native: ^0.1.1
 
-  # Opzionale: gestione stato avanzata con RiverPod (per punti extra)
-  # flutter_riverpod: ^3.0.0-dev.3
-
-# Dipendenze di sviluppo (solo per test e linting)
 dev_dependencies:
-  # Framework di test di Flutter
   flutter_test:
     sdk: flutter
 
-  # Set di regole consigliate per mantenere il codice pulito
   flutter_lints: ^5.0.0
 
-# Sezione dedicata alle risorse Flutter
 flutter:
-  # Necessario per usare le icone Material
   uses-material-design: true
+
+  assets:
+    - assets/images/logo_con_sfondo.png
+    - assets/images/logo_intero.png
+    - assets/images/solo_logo.png
+    - assets/images/solo_testo.png
+
+flutter_launcher_icons:
+  android: true
+  ios: true
+  image_path: "assets/icons/app_icon.png"

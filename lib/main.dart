@@ -3,6 +3,7 @@ import 'pages/home.dart';
 import 'pages/review.dart';
 import 'pages/profile.dart';
 import 'tmdb_test.dart'; //serve per il check dell'API e mostrare che funziona
+import 'widgets/navbar.dart';
 
 void main() {
   runApp(const CineGeekApp());
@@ -18,15 +19,15 @@ class CineGeekApp extends StatelessWidget {
       title: 'CineGeek',
       theme: ThemeData(
         useMaterial3: true, // per usare material you
-        colorSchemeSeed: const Color.fromARGB(255, 54, 82, 244), // colore principale del tema
-        brightness: Brightness.dark, // imposta tema scuro
+        colorSchemeSeed: const Color.fromARGB(255, 204, 255, 0), // colore principale del tema
+        brightness: Brightness.dark, // imposta tema chiaro o scuro
       ),
       //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!ATTENZIONE!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
       home: const MainNavigation(), // prima schermata dell’app
       //home: const TmdbTestPage(), //da togliere, usare solo per mostrare il corretto funzionamento dell'API di TMDB
 
     );
-  }
+  } 
 }
 
 /// Widget principale con la barra di navigazione in basso
@@ -57,27 +58,12 @@ class _MainNavigationState extends State<MainNavigation> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: _pages[_selectedIndex], // mostra la pagina selezionata
-      bottomNavigationBar: NavigationBar(
+      body: _pages[_selectedIndex],
+
+      // NAV BAR RIUTILIZZABILE
+      bottomNavigationBar: NavBar(
         selectedIndex: _selectedIndex,
-        onDestinationSelected: _onItemTapped,
-        destinations: const [
-          NavigationDestination(
-            icon: Icon(Icons.home_outlined),
-            selectedIcon: Icon(Icons.home),
-            label: 'Home',
-          ),
-          NavigationDestination(
-            icon: Icon(Icons.reviews_outlined),
-            selectedIcon: Icon(Icons.reviews),
-            label: 'Recensioni',
-          ),
-          NavigationDestination(
-            icon: Icon(Icons.person_outline),
-            selectedIcon: Icon(Icons.person),
-            label: 'Profilo',
-          ),
-        ],
+        onIndexChanged: _onItemTapped,
       ),
     );
   }
