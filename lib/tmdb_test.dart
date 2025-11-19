@@ -1,8 +1,10 @@
-//questo file serve per verificare il corretto funzionamentjo delle API di TMDB.
-//runnandolo mostra una lista di film o altro con il relativo punteggio
+// Questa pagina serve solo per verificare il funzionamento delle API TMDB
+// Mostra una lista di film popolari con immagini e punteggi
+
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import '../api_keys.dart';  // <-- Usa la key sicura
 
 class TmdbTestPage extends StatefulWidget {
   const TmdbTestPage({super.key});
@@ -22,11 +24,11 @@ class _TmdbTestPageState extends State<TmdbTestPage> {
   }
 
   Future<void> fetchPopularMovies() async {
-    const apiKey = 'b608d01980ef71a9f29b68e21c6f6575'; //QUI C'è LA KEY DELL'API
-    const url =
-        'https://api.themoviedb.org/3/movie/popular?api_key=$apiKey&language=it-IT&page=1';
+    final url = Uri.parse(
+      'https://api.themoviedb.org/3/movie/popular?api_key=${ApiKeys.tmdb}&language=it-IT&page=1',
+    );
 
-    final response = await http.get(Uri.parse(url));
+    final response = await http.get(url);
 
     if (response.statusCode == 200) {
       final data = jsonDecode(response.body);
@@ -35,7 +37,7 @@ class _TmdbTestPageState extends State<TmdbTestPage> {
         isLoading = false;
       });
     } else {
-      throw Exception('Errore nel caricamento dei film');
+      throw Exception('Errore nel caricamento dei film: ${response.statusCode}');
     }
   }
 
