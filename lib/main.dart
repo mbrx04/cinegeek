@@ -55,15 +55,28 @@ class _MainNavigationState extends State<MainNavigation> {
     });
   }
 
-  @override
+@override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: _pages[_selectedIndex],
+      body: Stack(
+        children: [
+          // Pagina corrente
+          _pages[_selectedIndex],
 
-      // NAV BAR RIUTILIZZABILE
-      bottomNavigationBar: NavBar(
-        selectedIndex: _selectedIndex,
-        onIndexChanged: _onItemTapped,
+          // Navbar flottante
+          Positioned(
+            bottom: 20, // distanza dal fondo
+            left: 0,
+            right: 0,
+            child: SizedBox(
+              height: 100,
+              child: LiquidNavBar(
+                selectedIndex: _selectedIndex,
+                onPageChanged: _onItemTapped,
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }

@@ -56,11 +56,15 @@ class _HomePageState extends State<HomePage> {
               child: Column(
                 children: [
                   MovieCarousel(
+                    title: "Film visti e non votati",
+                    movies: testMovies,
+                  ),
+                  MovieCarousel(
                     title: "Consigliati per te",
                     movies: testMovies,
                   ),
                   MovieCarousel(
-                    title: "Film visti e non votati",
+                    title: "Popolari",
                     movies: testMovies,
                   ),
                 ],
