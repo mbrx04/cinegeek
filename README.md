@@ -11,11 +11,11 @@
 
 ---
 
-## 💡 Il Progetto
+## Il Progetto
 **CineGeek** nasce per rivoluzionare l'esperienza al cinema, rendendo il dispositivo consapevole del contesto in cui ci troviamo.
 L'app non è solo un catalogo di film, ma un compagno intelligente che sfrutta i sensori del dispositivo per arricchire l'esperienza utente prima, durante e dopo la visione.
 
-## 🧠 Core Feature: Context-Awareness
+## Core Feature: Context-Awareness
 Il cuore pulsante dell'applicazione è la sua capacità di adattarsi all'ambiente circostante combinando due tecnologie:
 1.  **Sensore di Luminosità:** Rileva ambienti bui (tipici della sala).
 2.  **Geolocalizzazione:** Verifica la presenza in un cinema.
@@ -24,21 +24,21 @@ Il cuore pulsante dell'applicazione è la sua capacità di adattarsi all'ambient
 
 ---
 
-## ✨ Funzionalità Principali
+## Funzionalità Principali
 
-### 🏠 Home & Discovery
+### Home & Discovery
 * Interfaccia ispirata alle piattaforme di streaming.
 * Sezione "Film visti da votare".
 * Suggerimenti basati sui gusti personali e sul machine learning delle preferenze.
 
-### 🤝 Social & Recensioni
+### Social & Recensioni
 * Inserimento e lettura recensioni.
 * **Social Graph:** Le recensioni degli amici influenzano l'algoritmo di raccomandazione. Se un amico con gusti simili apprezza un film, questo viene proposto con priorità.
 
-### 📍 Weekend Mode
+### Weekend Mode
 * Se nel weekend l'utente si trova vicino a un cinema, l'app invia una notifica push propositiva ("Perché non vai a vedere un film?").
 
-### 🎨 UI & UX Design
+### UI & UX Design
 * **Minimal & fluid style**.
 
 ---
