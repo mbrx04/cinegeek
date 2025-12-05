@@ -50,9 +50,10 @@ class _HomePageState extends State<HomePage> {
           //  ),
           //),
 
-          // ⭐ Tutti i caroselli scrollabili
+          //tutti i caroselli scrollabili
           Expanded(
             child: SingleChildScrollView(
+              padding: const EdgeInsets.only(bottom: 85),
               child: Column(
                 children: [
                   MovieCarousel(

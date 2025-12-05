@@ -6,8 +6,8 @@ class SoloTesto extends StatelessWidget {
 
   const SoloTesto({
     super.key,
-    this.width = 160,
-    this.height = 160,
+    this.width = 160, //larghezza
+    this.height = 160,  //altezza
   });
 
   @override
