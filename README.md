@@ -1,8 +1,6 @@
 <div align="center">
 
 # 🎬 CineGeek
-### Context-Aware Cinema App
-
 
 <br>
 
