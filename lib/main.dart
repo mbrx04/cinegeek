@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import 'pages/home.dart';
-import 'pages/review.dart';
-import 'pages/profile.dart';
+import 'UI/pages/home.dart';
+import 'UI/pages/review.dart';
+import 'UI/pages/profile.dart';
 import 'tmdb_test.dart'; //serve per il check dell'API e mostrare che funziona
-import 'widgets/navbar.dart';
+import 'UI/widgets/navbar.dart';
 
 void main() {
   runApp(const CineGeekApp());
@@ -30,7 +30,7 @@ class CineGeekApp extends StatelessWidget {
   } 
 }
 
-/// Widget principale con la barra di navigazione in basso
+///widget principale con la barra di navigazione in basso
 class MainNavigation extends StatefulWidget {
   const MainNavigation({super.key});
 
@@ -39,16 +39,16 @@ class MainNavigation extends StatefulWidget {
 }
 
 class _MainNavigationState extends State<MainNavigation> {
-  int _selectedIndex = 0; // tiene traccia della pagina selezionata
+  int _selectedIndex = 0; //tiene traccia della pagina selezionata
 
-  // elenco delle 3 pagine principali
+  //elenco delle 3 pagine principali
   static final List<Widget> _pages = <Widget>[
     const HomePage(),
     const ReviewsPage(),
     const ProfilePage(),
   ];
 
-  // cambia pagina quando l’utente tocca un’icona della barra in basso
+  //cambia pagina quando l’utente tocca un’icona della barra in basso
   void _onItemTapped(int index) {
     setState(() {
       _selectedIndex = index;
@@ -60,12 +60,12 @@ class _MainNavigationState extends State<MainNavigation> {
     return Scaffold(
       body: Stack(
         children: [
-          // Pagina corrente
+          //pagina corrente
           _pages[_selectedIndex],
 
-          // Navbar flottante
+          //navbar flottante
           Positioned(
-            bottom: 20, // distanza dal fondo
+            bottom: 20, //distanza dal fondo
             left: 0,
             right: 0,
             child: SizedBox(
