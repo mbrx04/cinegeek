@@ -1,38 +1,28 @@
-# 🎬 CineGeek
+# CineGeek
 
-<img src="assets/images/logo_con_sfondo.png" alt="CineGeek Cover" width="600" style="border-radius: 10px; box-shadow: 0px 4px 10px rgba(0,0,0,0.2);" />
-
-<br>
+<div align="center">
+  <img src="assets/images/logo_con_sfondo.png" alt="CineGeek Cover" width="600" style="border-radius: 10px; box-shadow: 0px 4px 10px rgba(0,0,0,0.2);" />
 </div>
 
----
-
-**CineGeek** nasce per rivoluzionare l'esperienza in sala, rendendo il dispositivo consapevole del contesto.
-L'app non è solo un catalogo di film, ma un compagno intelligente che sfrutta i sensori del dispositivo per arricchire l'esperienza utente **prima, durante e dopo** la visione.
-
-## Core Feature
-
-Il cuore pulsante dell'applicazione è la sua capacità di adattarsi all'ambiente circostante combinando due tecnologie:
-
-1. **Sensore di Luminosità:** Rileva ambienti bui (tipici della sala).
-2. **Geolocalizzazione:** Verifica la presenza in un cinema o nei dintorni.
-
-> **Scenario d'uso:** Quando l'utente è al cinema e le luci si abbassano, CineGeek invia una **Notifica Intelligente** suggerendo la modalità silenziosa. A fine film, una seconda notifica invita a votare subito la pellicola appena vista. Lo stesso accade nel week end quando si passa nei pressi di un cinema
+<br>
 
 ---
 
-## Funzionalità Principali
+**CineGeek** nasce con l'obiettivo di rivoluzionare l'esperienza in sala, trasformando lo smartphone da semplice distrazione a dispositivo consapevole del contesto.
+L'app non è un semplice catalogo di film, ma un *compagno intelligente* che sfrutta la sensoristica avanzata per arricchire l'esperienza utente prima, durante e dopo la visione.
 
-### Home
+### Core Feature: Context Awareness
 
-* Interfaccia ispirata alle piattaforme di streaming.
-* Sezione "Film visti da votare".
-* Suggerimenti basati sui gusti personali e sulle preferenze.
+Il cuore pulsante dell'applicazione è la sua capacità di adattarsi all'ambiente circostante, combinando due tecnologie chiave:
 
-### Social & Recensioni
+* **Sensore di Luminosità:** Rileva il calo di luci tipico dell'inizio della proiezione.
+* **Geolocalizzazione:** Verifica la presenza fisica dell'utente all'interno o nei pressi di un cinema.
 
-* Inserimento e lettura recensioni.
+> **Scenario d'uso:**
+> Quando l'utente è in sala e le luci si abbassano, CineGeek invia una **Notifica Intelligente** discreta suggerendo di attivare la modalità silenziosa. Al termine della proiezione, una seconda notifica invita a votare "a caldo" la pellicola appena vista.
 
-### Weekend Mode
+### Funzionalità Principali
 
-* Se nel weekend l'utente si trova vicino a un cinema, l'app invia una notifica push propositiva.
+* **Home Immersiva:** Interfaccia moderna ispirata alle maggiori piattaforme di streaming, con una sezione dedicata ai "Film visti da votare" e suggerimenti su misura basati sui gusti personali.
+* **Social & Community:** Uno spazio dedicato per scrivere, leggere e condividere recensioni con la community di appassionati.
+* **Weekend Mode:** Una funzionalità proattiva che, rilevando la posizione dell'utente nei pressi di un cinema durante il fine settimana, invia suggerimenti mirati per invitare alla visione.
