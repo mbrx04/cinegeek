@@ -5,37 +5,38 @@ class MoviePreviewPopup extends StatelessWidget {
   final String imageUrl;
   final String title;
   final String description;
+  final String? heroTag;
 
   const MoviePreviewPopup({
     super.key,
     required this.imageUrl,
     required this.title,
     required this.description,
+    this.heroTag,
   });
 
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: () => Navigator.pop(context),
+      onTap: () => Navigator.pop(context),  //se clicchiamo fuori del popup lo chiude
       child: Scaffold(
-        backgroundColor: Colors.transparent, //sfondo trasparente per poi fare lo sfocato
+        backgroundColor: Colors.transparent, 
         body: BackdropFilter(
-          //filtro sfocatura
           filter: ImageFilter.blur(sigmaX: 10.0, sigmaY: 10.0), 
           child: Container(
             color: Colors.black.withOpacity(0.3), 
             child: Center(
               child: GestureDetector(
-                onTap: () {}, //per non chiudere il popup quando cliccli sul popup
+                onTap: () {}, 
                 child: Container(
                   decoration: BoxDecoration(
                     color: Theme.of(context).colorScheme.surface,
                     borderRadius: BorderRadius.circular(16),
-                    boxShadow: [
+                    boxShadow: const [
                       BoxShadow(
                         color: Colors.black26,
                         blurRadius: 10,
-                        offset: const Offset(0, 4),
+                        offset: Offset(0, 4),
                       ),
                     ],
                   ),
@@ -52,7 +53,7 @@ class MoviePreviewPopup extends StatelessWidget {
                           height: 300,
                           fit: BoxFit.cover,
                           errorBuilder: (context, error, stackTrace) => 
-                              const Icon(Icons.error, size: 50, color: Colors.red), //per errori nel caricamento dell'immagine
+                              const Icon(Icons.error, size: 50, color: Colors.red),
                         ),
                       ),
                       const SizedBox(height: 12),
@@ -65,10 +66,11 @@ class MoviePreviewPopup extends StatelessWidget {
                         ),
                       ),
                       const SizedBox(height: 8),
+                      //descrizione di massimo 4 righe
                       Text(
                         description,
                         textAlign: TextAlign.center,
-                        maxLines: 4,  //limita a 4 righe per evitare overflow
+                        maxLines: 4,  
                         overflow: TextOverflow.ellipsis,
                         style: const TextStyle(
                           fontSize: 16,
