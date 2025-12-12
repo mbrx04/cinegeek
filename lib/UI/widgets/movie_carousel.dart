@@ -1,83 +1,102 @@
 import 'package:flutter/material.dart';
-import 'movie_card.dart';
 import '../pages/movie_detail.dart';
-import 'movie_preview_popup.dart';
-
-//in questo file viene implementato il carosello con le copertine da scorrere
-//orizzontalmente in stile app di streaming
 
 class MovieCarousel extends StatelessWidget {
-  final String title; //titolo della sezione
-  final List<Map<String, dynamic>> movies; //puo contenere più tipi di dati con dynamic
+  final String title;
+  final List<Map<String, String>> movies;
+  final String heroTagPrefix;
 
   const MovieCarousel({
     super.key,
-    required this.title,  //titolo obbligatorio
-    required this.movies, //lista obbligatoria
+    required this.title,
+    required this.movies,
+    required this.heroTagPrefix,
   });
 
   @override
   Widget build(BuildContext context) {
     return Column(
-      crossAxisAlignment: CrossAxisAlignment.start, //allinea tutto a sx
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        //titolo della sezione
+        //titolo di ogni carosello
         Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16.0),  //margine orizzontale
+          padding: const EdgeInsets.only(left: 20, top: 20, bottom: 10),
           child: Text(
             title,
-            style: const TextStyle(
-              fontSize: 20,
-              fontWeight: FontWeight.bold,
-            ),
+            style: Theme.of(context).textTheme.headlineMedium, 
           ),
         ),
 
-        const SizedBox(height: 12), //spazio tra titolo e carosello
-
-        //lista orizzontale dei film
+        //carosello orizzontale
         SizedBox(
-          height: 260, //altezza fissa per la card e titolo
+          height: 300,
           child: ListView.builder(
-            scrollDirection: Axis.horizontal, //scorrimento orizzontale
+            scrollDirection: Axis.horizontal,
+            padding: const EdgeInsets.symmetric(horizontal: 10),
             itemCount: movies.length,
             itemBuilder: (context, index) {
               final movie = movies[index];
+              //tag unico per l'animazione Hero
+              final String heroTag = '${heroTagPrefix}_$index';
 
-              return Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 8.0), //spazio tra le card
-                child: MovieCard(
-                  imageUrl: movie['imageUrl']!,
-                  title: movie['title']!,
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) => MovieDetailPage(
-                          title: movie['title'],
-                          imageUrl: movie['imageUrl'],
-                          description: movie['description'] ?? "Nessuna descrizione disponibile ancora",
-                          voteAverage: movie['voteAverage']?.toDouble() ?? 0.0,
-                          heroTag: movie['imageUrl'],
-                        ),
-                      ),
-                    );
-                  },
-                  onLongPress: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
+              return GestureDetector(
+                onTap: () {
+                  //navigazione a detail page con animaizone hero
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
                       builder: (_) => MovieDetailPage(
                         title: movie['title']!,
                         imageUrl: movie['imageUrl']!,
-                        description: movie['description'] ?? "Nessuna descrizione disponibile",
-                        voteAverage: movie['voteAverage']?.toDouble() ?? 0.0,
-                        heroTag: movie['imageUrl']!,
+                        description: "Descrizione non disponibile per ora...",
+                        voteAverage: 7.5, //voto fake perchè non ci sono le API
+                        heroTag: heroTag,
                       ),
                     ),
-                    );
-                  },
-
+                  );
+                },
+                child: Container(
+                  width: 150, //larghezza locandina
+                  margin: const EdgeInsets.symmetric(horizontal: 8),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      //locandina
+                      Expanded(
+                        child: Hero(
+                          tag: heroTag,
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.circular(12),
+                            child: Image.network(
+                              movie['imageUrl']!,
+                              fit: BoxFit.cover,
+                              width: double.infinity,
+                              // Gestione errore immagine
+                              errorBuilder: (ctx, error, stack) {
+                                return Container(
+                                  color: Colors.grey[800],
+                                  child: const Center(
+                                    child: Icon(Icons.broken_image, color: Colors.white54),
+                                  ),
+                                );
+                              },
+                            ),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 5),
+                      //titolo sotto la locandina nel carosello
+                      Text(
+                        movie['title']!,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               );
             },

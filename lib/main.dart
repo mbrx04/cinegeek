@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'UI/pages/home.dart';
 import 'UI/pages/review.dart';
 import 'UI/pages/profile.dart';
-import 'tmdb_test.dart'; //serve per il check dell'API e mostrare che funziona
+import 'UI/pages/search_result.dart';
 import 'UI/widgets/navbar.dart';
+import 'UI/theme.dart';
 
 void main() {
   runApp(const CineGeekApp());
@@ -15,22 +17,19 @@ class CineGeekApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      debugShowCheckedModeBanner: false, // nasconde la barra in alto a dx con scritto DEBUG in rosso
+      debugShowCheckedModeBanner: false,
       title: 'CineGeek',
-      theme: ThemeData(
-        useMaterial3: true, // per usare material you
-        colorSchemeSeed: const Color.fromARGB(255, 204, 255, 0), // colore principale del tema
-        brightness: Brightness.dark, // imposta tema chiaro o scuro
-      ),
-      //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!ATTENZIONE!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-      home: const MainNavigation(), // prima schermata dell’app
-      //home: const TmdbTestPage(), //da togliere, usare solo per mostrare il corretto funzionamento dell'API di TMDB
 
+      theme: AppTheme.lightTheme,
+      darkTheme: AppTheme.darkTheme,
+      themeMode: ThemeMode.system,
+
+      home: const MainNavigation(),
     );
   } 
 }
 
-///widget principale con la barra di navigazione in basso
+//nav bar e navigazione principale
 class MainNavigation extends StatefulWidget {
   const MainNavigation({super.key});
 
@@ -39,44 +38,106 @@ class MainNavigation extends StatefulWidget {
 }
 
 class _MainNavigationState extends State<MainNavigation> {
-  int _selectedIndex = 0; //tiene traccia della pagina selezionata
+  int _selectedIndex = 0; 
+  bool _isSearching = false; 
+  String _searchQuery = ""; 
+  
+  //key globale per comandare la navbar
+  final GlobalKey<LiquidNavBarState> _navBarKey = GlobalKey<LiquidNavBarState>();
 
-  //elenco delle 3 pagine principali
   static final List<Widget> _pages = <Widget>[
     const HomePage(),
     const ReviewsPage(),
     const ProfilePage(),
   ];
 
-  //cambia pagina quando l’utente tocca un’icona della barra in basso
   void _onItemTapped(int index) {
     setState(() {
       _selectedIndex = index;
     });
   }
 
-@override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      body: Stack(
-        children: [
-          //pagina corrente
-          _pages[_selectedIndex],
+  void _handleSearch(String text) {
+    setState(() {
+      _searchQuery = text;
+      _isSearching = text.isNotEmpty;
+    });
+  }
 
-          //navbar flottante
-          Positioned(
-            bottom: 20, //distanza dal fondo
-            left: 0,
-            right: 0,
-            child: SizedBox(
-              height: 100,
-              child: LiquidNavBar(
-                selectedIndex: _selectedIndex,
-                onPageChanged: _onItemTapped,
+  @override
+  Widget build(BuildContext context) {
+    return PopScope(
+      canPop: false, //disabilita la chiusura automatica
+      onPopInvoked: (didPop) {
+        if (didPop) return;
+
+        //gestisce la tastiera
+        if (MediaQuery.of(context).viewInsets.bottom > 0) {
+          FocusScope.of(context).unfocus();
+          return;
+        }
+
+        //gestisce la barra di ricerca
+        final bool isBarOpen = _navBarKey.currentState?.isSearchOpen ?? false;
+
+        if (_isSearching || isBarOpen) {
+          _navBarKey.currentState?.closeSearch();
+          setState(() {
+            _isSearching = false;
+            _searchQuery = "";
+          });
+          return;
+        }
+
+        //gestisce le pagine
+        if (_selectedIndex != 0) {
+          setState(() {
+            _selectedIndex = 0;
+          });
+          return;
+        }
+
+        //chiude l'app
+        if (context.mounted) {
+          SystemNavigator.pop(); 
+        }
+      },
+      child: Scaffold(
+        body: Stack(
+          children: [
+            //layer 1
+            IndexedStack(
+              index: _selectedIndex,
+              children: _pages,
+            ),
+
+            //layer 2
+            if (_isSearching)
+              Positioned.fill(
+                child: Container(
+                  //usa il colore di sfondo in base al tema
+                  color: Theme.of(context).colorScheme.surface, 
+                  child: SearchResultsPage(query: _searchQuery),
+                ),
+              ),
+
+            //layer 3
+            Positioned(
+              bottom: 20,
+              left: 0,
+              right: 0,
+              child: SizedBox(
+                height: 100,
+                child: LiquidNavBar(
+                  key: _navBarKey,
+                  selectedIndex: _selectedIndex,
+                  onPageChanged: _onItemTapped,
+                  onSearchChanged: _handleSearch,
+                ),
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

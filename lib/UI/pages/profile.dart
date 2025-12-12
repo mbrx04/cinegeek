@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import '../widgets/loghi_widget.dart';
 import '../widgets/top_bar.dart';
 
 class ProfilePage extends StatelessWidget {
