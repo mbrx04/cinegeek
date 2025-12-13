@@ -1,6 +1,8 @@
+import 'package:cinegeek/UI/pages/write_review.dart';
 import 'package:flutter/material.dart';
 import '../widgets/rating.dart';
 import '../widgets/circle_button.dart';
+import '../widgets/star_rating.dart';
 
 class MovieDetailPage extends StatelessWidget {
   final String title;
@@ -9,6 +11,7 @@ class MovieDetailPage extends StatelessWidget {
   final double voteAverage;
   final String heroTag;
   final bool isPopup;
+  final bool showStars;
 
   const MovieDetailPage({
     super.key,
@@ -18,6 +21,7 @@ class MovieDetailPage extends StatelessWidget {
     required this.voteAverage, 
     required this.heroTag,
     this.isPopup = false,
+    this.showStars = false,
   });
 
   @override
@@ -45,29 +49,34 @@ class MovieDetailPage extends StatelessWidget {
                       width: imageWidth,
                       height: imageHeight,
                       fit: BoxFit.cover,
+                      errorBuilder: (_,__,___) => Container(color: Colors.grey, width: imageWidth, height: imageHeight),
                     ),
                   ),
                 ),
                 const SizedBox(height: 20),
+
                 //titolo centrato come la copertina
                 SizedBox(
                   width: double.infinity,
                   child: Text(
                     title,
                     textAlign: TextAlign.center,
-                    style: const TextStyle(
-                      fontSize: 28,
-                      fontWeight: FontWeight.bold,
-                    ),
+                    style: Theme.of(context).textTheme.headlineLarge,
                   ),
                 ),
                 const SizedBox(height: 12),
-                //indicatore del punteggio
-                RatingCircle(
-                  voteAverage: voteAverage,
-                  size: 70,
-                ),
+
+                //quando mostrare le stelle o il cerchio
+                if (showStars)
+                  StarRating(rating: voteAverage,
+                  itemSize: 40
+                  )
+                else
+                  RatingCircle(voteAverage: voteAverage,
+                  size : 70
+                  ),
                 const SizedBox(height: 20),
+                
                 //descrizione sempre centrata
                 SizedBox(
                   width: double.infinity,
@@ -95,14 +104,17 @@ class MovieDetailPage extends StatelessWidget {
             onTap: () => Navigator.pop(context),
           ),
         ),
+
+        //tasto per scrivere la recensione
         if (!isPopup)
-          //tasto per scrivere la recensione
           Positioned(
           bottom: 16,
           right: 16,
           child: CircleButton(
             icon: Icons.edit,
-            onTap: () => print("Scrivi recensione"),
+            onTap: () {
+              Navigator.push(context, MaterialPageRoute(builder: (_) => const WriteReviewPage()));
+            }
           ),
         ),
         ],
