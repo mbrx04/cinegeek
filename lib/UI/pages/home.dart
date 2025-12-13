@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
 import '../widgets/top_bar.dart';
 import '../widgets/movie_carousel.dart';
+// IMPORT PER PROVA
+import 'LogInSignUp/authLandingPage.dart';
+import '../widgets/cineGlassButton.dart';
+// FINE IMPORT PROVA
 
 //HARDCODED PER LISTA DEI FILM DA MODIFICARE POI CON DATI VERI
 class HomePage extends StatefulWidget {
@@ -57,6 +61,26 @@ class _HomePageState extends State<HomePage> {
                     movies: testMovies,
                     heroTagPrefix: "home_popolari",
                   ),
+
+
+                  // prova logIn DA CANCELLARE IN SEGUITO
+                  const SizedBox(height: 24), // spazio tra caroselli e bottone
+                  CineGlassButton(
+                    label: "Login / Registrazione",
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => const AuthLandingPage(),
+                        ),
+                      );
+                    },
+                  ),
+                  const SizedBox(height: 24), // padding finale
+                  // FINE PROVA
+
+
+
                 ],
               ),
             ),
