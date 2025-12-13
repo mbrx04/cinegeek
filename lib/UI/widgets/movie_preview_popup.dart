@@ -23,7 +23,7 @@ class MoviePreviewPopup extends StatelessWidget {
           //filtro sfocatura
           filter: ImageFilter.blur(sigmaX: 10.0, sigmaY: 10.0), 
           child: Container(
-            color: Colors.black.withOpacity(0.3), 
+            color: Colors.black.withAlpha(77),
             child: Center(
               child: GestureDetector(
                 onTap: () {}, //per non chiudere il popup quando cliccli sul popup

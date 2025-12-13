@@ -154,7 +154,7 @@ class _LiquidNavBarState extends State<LiquidNavBar>
                   child: Container(
                     height: _navSize,
                     decoration: BoxDecoration(
-                      color: Colors.black.withOpacity(0.25),
+                      color: Colors.black.withAlpha(64),
                       borderRadius: BorderRadius.circular(35),
                     ),
                     child: Stack(
@@ -168,7 +168,7 @@ class _LiquidNavBarState extends State<LiquidNavBar>
                               width: 80,
                               height: 80,
                               decoration: BoxDecoration(
-                                color: Colors.white.withOpacity(0.15),
+                                color: Colors.white.withAlpha(38),
                                 shape: BoxShape.circle,
                               ),
                             ),
@@ -186,7 +186,7 @@ class _LiquidNavBarState extends State<LiquidNavBar>
                                 height: isSelected ? 70 : 60,
                                 decoration: BoxDecoration(
                                   color: (!_isDragging && isSelected)
-                                      ? Colors.white.withOpacity(0.15)
+                                      ? Colors.white.withAlpha(38)
                                       : Colors.transparent,
                                   shape: BoxShape.circle,
                                 ),
@@ -228,9 +228,9 @@ class _LiquidNavBarState extends State<LiquidNavBar>
                 height: _navSize,
                 clipBehavior: Clip.antiAlias,
                 decoration: BoxDecoration(
-                  color: Colors.black.withOpacity(0.6),
+                  color: Colors.black.withAlpha(153),
                   borderRadius: BorderRadius.circular(35), // Sempre circolare ai lati
-                  border: Border.all(color: Colors.white.withOpacity(0.1), width: 1),
+                  border: Border.all(color: Colors.white.withAlpha(26), width: 1),
                 ),
                 child: Row(
                   mainAxisAlignment: _isSearchOpened ? MainAxisAlignment.start : MainAxisAlignment.center,
