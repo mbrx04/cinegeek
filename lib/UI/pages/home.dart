@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import '../widgets/top_bar.dart';
-import '../widgets/movie_card.dart';
 import '../widgets/movie_carousel.dart';
 // IMPORT PER PROVA
 import 'LogInSignUp/authLandingPage.dart';
@@ -41,36 +40,26 @@ class _HomePageState extends State<HomePage> {
         children: [
           const TopBarLogo(),
 
-          ////card con un film di esempio
-          //Padding(
-          //  padding: const EdgeInsets.all(16.0),
-          //  child: MovieCard(
-          //    imageUrl:
-          //        "https://www.themoviedb.org/t/p/w1280/A1H2lnpur1IofI0ufcImcAnSytP.jpg",
-          //    title: "Super Mario Bros",
-          //    onTap: () {
-          //      print("hai cliccato il film di super mario");
-          //    },
-          //  ),
-          //),
-
           //tutti i caroselli scrollabili
           Expanded(
             child: SingleChildScrollView(
-              padding: const EdgeInsets.only(bottom: 85),
+              padding: const EdgeInsets.only(bottom: 120),  //padding per la navbar, si può modificare in base a quanto vogliamo si fermino i caroselli dalla navbar
               child: Column(
                 children: [
                   MovieCarousel(
                     title: "Film visti e non votati",
                     movies: testMovies,
+                    heroTagPrefix: "home_visti",
                   ),
                   MovieCarousel(
                     title: "Consigliati per te",
                     movies: testMovies,
+                    heroTagPrefix: "home_consigiati",
                   ),
                   MovieCarousel(
                     title: "Popolari",
                     movies: testMovies,
+                    heroTagPrefix: "home_popolari",
                   ),
 
 

@@ -1,7 +1,5 @@
-# Nome del progetto
 name: cinegeek
 
-# Breve descrizione del progetto
 description: "CineGeek - App context-aware per cinema e recensioni film"
 
 publish_to: 'none'
@@ -27,6 +25,8 @@ dependencies:
   flutter_launcher_icons: ^0.14.4
   cupertino_native: ^0.1.1
   anim_search_bar: ^2.0.3
+  google_fonts: ^6.3.3
+  flutter_rating_bar: ^4.0.1
 
 dev_dependencies:
   flutter_test:
@@ -42,8 +42,3 @@ flutter:
     - assets/images/logo_intero.png
     - assets/images/solo_logo.png
     - assets/images/solo_testo.png
-
-flutter_launcher_icons:
-  android: true
-  ios: true
-  image_path: "assets/icons/app_icon.png"
