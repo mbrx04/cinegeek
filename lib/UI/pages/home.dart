@@ -18,17 +18,17 @@ class _HomePageState extends State<HomePage> {
     {
       "title": "The Fast and The Furious",
       "imageUrl":
-          "https://www.themoviedb.org/t/p/w1280/fMhRkSfn1gA7RriWlSAk9yCuZWp.jpg",
+      "https://www.themoviedb.org/t/p/w1280/fMhRkSfn1gA7RriWlSAk9yCuZWp.jpg",
     },
     {
       "title": "Fast X",
       "imageUrl":
-          "https://www.themoviedb.org/t/p/w1280/hC6mLdlgpFU63FOduX80xaGevGj.jpg",
+      "https://www.themoviedb.org/t/p/w1280/hC6mLdlgpFU63FOduX80xaGevGj.jpg",
     },
     {
       "title": "Gran Turismo - La storia di un sogno impossibile",
       "imageUrl":
-          "https://www.themoviedb.org/t/p/w1280/34moeAXmzjYgDq73yzy1kuYe4di.jpg",
+      "https://www.themoviedb.org/t/p/w1280/34moeAXmzjYgDq73yzy1kuYe4di.jpg",
     }
   ];
 
