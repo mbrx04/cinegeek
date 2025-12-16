@@ -4,7 +4,7 @@
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
-import '../api_keys.dart';  // <-- Usa la key sicura
+import 'api_keys.dart';  // <-- Usa la key sicura
 
 class TmdbTestPage extends StatefulWidget {
   const TmdbTestPage({super.key});

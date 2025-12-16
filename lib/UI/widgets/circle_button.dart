@@ -22,10 +22,10 @@ class CircleButton extends StatelessWidget {
       width: size,  //larghezza
       height: size, //altezza
       decoration: BoxDecoration(
-        color: backgroundColor ?? Colors.black.withOpacity(0.25),
+        color: backgroundColor ?? Colors.black.withAlpha(64),
         shape: BoxShape.circle, //forma a cerchio
         border: Border.all(
-          color: Colors.white.withOpacity(0.1),
+          color: Colors.white.withAlpha(26),
           width: 1, //spessore del bordo
         ),
       ),
