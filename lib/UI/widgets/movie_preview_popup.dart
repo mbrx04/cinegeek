@@ -24,7 +24,7 @@ class MoviePreviewPopup extends StatelessWidget {
         body: BackdropFilter(
           filter: ImageFilter.blur(sigmaX: 10.0, sigmaY: 10.0), 
           child: Container(
-            color: Colors.black.withOpacity(0.3), 
+            color: Colors.black.withAlpha(77),
             child: Center(
               child: GestureDetector(
                 onTap: () {}, 
