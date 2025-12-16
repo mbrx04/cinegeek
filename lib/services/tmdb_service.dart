@@ -1,6 +1,6 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
-import '../api_keys.dart'; // Importa la tua chiave locale
+import '../api_keys.dart'; //importa la chiave locale
 
 class TmdbService {
   final String _baseUrl = 'https://api.themoviedb.org/3';
