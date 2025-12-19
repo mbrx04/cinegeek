@@ -48,7 +48,7 @@ class _MainNavigationState extends State<MainNavigation> {
   static final List<Widget> _pages = <Widget>[
     const HomePage(),
     const ReviewsPage(),
-    const ProfilePage(),
+    const Profile(username: 'User', avatar: ''),
   ];
 
   void _onItemTapped(int index) {

@@ -57,9 +57,9 @@ class _WriteReviewPageState extends State<WriteReviewPage> {
 
   BoxDecoration _getInputBoxDecoration() {
     return BoxDecoration(
-      color: Colors.black.withOpacity(0.6),
+      color: Colors.black.withAlpha(153),
       borderRadius: BorderRadius.circular(35),
-      border: Border.all(color: Colors.white.withOpacity(0.1), width: 1),
+      border: Border.all(color: Colors.white.withAlpha(26), width: 1),
     );
   }
 
@@ -102,7 +102,7 @@ class _WriteReviewPageState extends State<WriteReviewPage> {
                   Container(
                     margin: const EdgeInsets.only(top: 8),
                     decoration: BoxDecoration(
-                      color: Colors.black.withOpacity(0.8),
+                      color: Colors.black.withAlpha(204),
                       borderRadius: BorderRadius.circular(20),
                       border: Border.all(color: Colors.white10),
                     ),
