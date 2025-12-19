@@ -3,7 +3,7 @@ import '../widgets/top_bar.dart';
 import '../widgets/movie_carousel.dart';
 
 // IMPORT PER PROVA
-import 'LogInSignUp/authLandingPage.dart';
+import 'LogInSignUp/auth_landing_page.dart';
 import '../widgets/cineGlassButton.dart';
 // FINE IMPORT PROVA
 

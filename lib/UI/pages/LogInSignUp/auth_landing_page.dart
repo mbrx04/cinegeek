@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import '../../widgets/top_bar.dart';
 import '../../widgets/cineGlassButton.dart';
-import 'logInPage.dart';
-import 'signUpPage.dart';
+import 'log_in_page.dart';
+import 'sign_up_page.dart';
 
 class AuthLandingPage extends StatelessWidget
 {

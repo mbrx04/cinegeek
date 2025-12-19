@@ -1,4 +1,4 @@
-import 'package:cinegeek/UI/pages/MovieGridPage.dart';
+import 'package:cinegeek/UI/pages/movie_grid_page.dart';
 import 'package:flutter/material.dart';
 import '../widgets/top_bar.dart';
 
