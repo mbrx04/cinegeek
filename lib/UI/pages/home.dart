@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../widgets/top_bar.dart';
 import '../widgets/movie_carousel.dart';
+
 // IMPORT PER PROVA
 import 'LogInSignUp/authLandingPage.dart';
 import '../widgets/cineGlassButton.dart';

@@ -33,14 +33,14 @@ class AppTheme {
       bodyMedium: GoogleFonts.montserrat(
         fontSize: 15,
         height: 1.5,
-        color: textColor.withOpacity(0.9),
+        color: textColor.withAlpha(230),
         fontWeight: FontWeight.w400,
       ),
       
       labelMedium: GoogleFonts.montserrat(
         fontSize: 13,
         fontWeight: FontWeight.w500,
-        color: textColor.withOpacity(0.7),
+        color: textColor.withAlpha(179),
       ),
     );
   }

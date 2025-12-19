@@ -12,7 +12,7 @@ class SearchResultsPage extends StatelessWidget {
       return Center(
         child: Text(
           "Cerca un film...",
-          style: TextStyle(color: Colors.white.withOpacity(0.5), fontSize: 18),
+          style: TextStyle(color: Colors.white.withAlpha(128), fontSize: 18),
         ),
       );
     }
