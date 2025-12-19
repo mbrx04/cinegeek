@@ -18,10 +18,10 @@ class LiquidNavBar extends StatefulWidget {
   });
 
   @override
-  State<LiquidNavBar> createState() => LiquidNavBarState();
+  State<LiquidNavBar> createState() => _LiquidNavBarState();
 }
 
-class LiquidNavBarState extends State<LiquidNavBar>
+class _LiquidNavBarState extends State<LiquidNavBar>
     with SingleTickerProviderStateMixin {
   
   // UI State
@@ -31,33 +31,19 @@ class LiquidNavBarState extends State<LiquidNavBar>
   bool _isSearchOpened = false;
   final TextEditingController _searchController = TextEditingController();
 
-  //animazione
+  // Animazione
   late AnimationController _animController;
   late Animation<double> _widthAnim;
   
+  // Costanti
   final double _navSize = 70;
-  final double _iconSize = 56; //simensione standard per i bottoni circolari
+  final double _iconSize = 56; // Dimensione standard per i bottoni circolari
 
   final List<IconData> icons = [
     Icons.home,
     Icons.reviews,
     Icons.person,
   ];
-
-  //chiude a ricerca se è aperta facendo back con gesture
-  void closeSearch() {
-    if (_isSearchOpened) {
-      setState(() {
-        _isSearchOpened = false;
-        _searchController.clear(); //pulisce il testo
-        FocusScope.of(context).unfocus(); //chiude la tastiera
-        _animController.reverse(); //stop animazione
-      });
-      widget.onSearchChanged?.call(""); 
-    }
-  }
-
-  bool get isSearchOpen => _isSearchOpened;
 
   @override
   void initState() {
@@ -91,7 +77,8 @@ class LiquidNavBarState extends State<LiquidNavBar>
     super.dispose();
   }
 
-//navigazione  
+  // --- Logica Navigazione ---
+  
   void _onDragUpdate(Offset localPosition, double width) {
     double segmentWidth = width / icons.length;
     int newIndex = (localPosition.dx ~/ segmentWidth).clamp(0, icons.length - 1);
@@ -113,7 +100,7 @@ class LiquidNavBarState extends State<LiquidNavBar>
     widget.onPageChanged(index);
   }
 
-  //ricerca
+  // --- Logica Ricerca ---
 
   void _toggleSearch() {
     setState(() {
@@ -122,7 +109,7 @@ class LiquidNavBarState extends State<LiquidNavBar>
         _animController.forward();
       } else {
         _searchController.clear();
-        FocusScope.of(context).unfocus(); //chiude la tasteira al primo back
+        FocusScope.of(context).unfocus(); // Chiude la tastiera
         _animController.reverse();
       }
     });
@@ -131,7 +118,8 @@ class LiquidNavBarState extends State<LiquidNavBar>
   @override
   Widget build(BuildContext context) {
     final screenWidth = MediaQuery.of(context).size.width;
-    final double maxSearchWidth = screenWidth - 40; //larghezza massima search bar
+    // Calcoliamo la larghezza massima della barra di ricerca
+    final double maxSearchWidth = screenWidth - 40;
 
     _widthAnim = Tween<double>(
       begin: _navSize,
@@ -140,7 +128,8 @@ class LiquidNavBarState extends State<LiquidNavBar>
 
     return Stack(
       children: [
-        //nav bar
+        // 1. BARRA DI NAVIGAZIONE (Icone)
+        // La nascondiamo visivamente quando la ricerca copre tutto, ma tecnicamente è sotto
         if (!_isSearchOpened)
           Positioned(
             bottom: 20,
@@ -153,7 +142,7 @@ class LiquidNavBarState extends State<LiquidNavBar>
               }),
               onHorizontalDragUpdate: (details) {
                 setState(() => _dragPosition = details.localPosition);
-                //calcolo larghezza area drag
+                // Calcolo dinamico larghezza area drag
                 double dragAreaWidth = screenWidth - (50 + _navSize);
                 _onDragUpdate(details.localPosition, dragAreaWidth);
               },
@@ -165,13 +154,13 @@ class LiquidNavBarState extends State<LiquidNavBar>
                   child: Container(
                     height: _navSize,
                     decoration: BoxDecoration(
-                      color: Colors.black.withAlpha(64),
+                      color: Colors.black.withOpacity(0.25),
                       borderRadius: BorderRadius.circular(35),
                     ),
                     child: Stack(
                       alignment: Alignment.center,
                       children: [
-                        //bolla animata
+                        // Bolla animata
                         if (_isDragging && _dragPosition != null)
                           Positioned(
                             left: (_dragPosition!.dx - 30).clamp(0.0, screenWidth - (50 + _navSize) - 60),
@@ -179,12 +168,12 @@ class LiquidNavBarState extends State<LiquidNavBar>
                               width: 80,
                               height: 80,
                               decoration: BoxDecoration(
-                                color: Colors.white.withAlpha(38),
+                                color: Colors.white.withOpacity(0.15),
                                 shape: BoxShape.circle,
                               ),
                             ),
                           ),
-                        //icone
+                        // Icone
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                           children: List.generate(icons.length, (i) {
@@ -197,7 +186,7 @@ class LiquidNavBarState extends State<LiquidNavBar>
                                 height: isSelected ? 70 : 60,
                                 decoration: BoxDecoration(
                                   color: (!_isDragging && isSelected)
-                                      ? Colors.white.withAlpha(38)
+                                      ? Colors.white.withOpacity(0.15)
                                       : Colors.transparent,
                                   shape: BoxShape.circle,
                                 ),
@@ -220,7 +209,7 @@ class LiquidNavBarState extends State<LiquidNavBar>
             ),
           ),
 
-        //search bar che si estende
+        // 2. BARRA DI RICERCA ESPANDIBILE
         Positioned(
           bottom: 20,
           right: 20,
@@ -228,9 +217,10 @@ class LiquidNavBarState extends State<LiquidNavBar>
             animation: _widthAnim,
             builder: (context, child) {
               final double currentWidth = _widthAnim.value;
-              // 140 = icona (56) + gap (8) + min text field + close
+              // Mostra il campo testo solo se c'è abbastanza spazio (evita overflow iniziale)
+              // 140 è una soglia sicura: icona (56) + gap (8) + min text field + close
               final bool showContent = currentWidth > 140; 
-              //mostra bottone chiudi solo verso la fine dell'apertura
+              // Mostra bottone chiudi solo verso la fine dell'apertura
               final bool showCloseBtn = currentWidth > 200; 
 
               return Container(
@@ -238,25 +228,25 @@ class LiquidNavBarState extends State<LiquidNavBar>
                 height: _navSize,
                 clipBehavior: Clip.antiAlias,
                 decoration: BoxDecoration(
-                  color: Colors.black.withAlpha(153),
+                  color: Colors.black.withOpacity(0.6),
                   borderRadius: BorderRadius.circular(35), // Sempre circolare ai lati
-                  border: Border.all(color: Colors.white.withAlpha(26), width: 1),
+                  border: Border.all(color: Colors.white.withOpacity(0.1), width: 1),
                 ),
                 child: Row(
                   mainAxisAlignment: _isSearchOpened ? MainAxisAlignment.start : MainAxisAlignment.center,
                   children: [
-                    //lente sempre visibile
+                    // A. Bottone Lente (Sempre visibile)
                     SizedBox(
                       width: _iconSize, // 56px fisso
                       height: _iconSize,
                       child: IconButton(
                         onPressed: _toggleSearch,
                         icon: const Icon(Icons.search, color: Colors.white, size: 24),
-                        padding: EdgeInsets.zero, //rimuove padding extra
+                        padding: EdgeInsets.zero, // Rimuove padding extra
                       ),
                     ),
 
-                    //campo di testo solo quando c'è spazio
+                    // B. Campo di testo (Visibile solo quando c'è spazio)
                     if (_isSearchOpened && showContent) ...[
                       const SizedBox(width: 8),
                       Expanded(
@@ -271,22 +261,21 @@ class LiquidNavBarState extends State<LiquidNavBar>
                           ),
                           onSubmitted: (text) {
                             print("Cerco: $text");
-                            _toggleSearch(); //chiudi se clicchi invio
+                            _toggleSearch(); // Chiudi dopo invio se vuoi
                           },
                         ),
                       ),
                     ],
 
-                    //bottone X per chiudere che esce solo a fine animaizone
+                    // C. Bottone Chiudi (Visibile solo a fine animazione)
                     if (_isSearchOpened && showCloseBtn) ...[
                       SizedBox(
                         width: _iconSize,
                         height: _iconSize,
                         child: CircleButton(
                           icon: Icons.close, 
-                          size: _iconSize,
-                          backgroundColor: Colors.transparent,
-                          onTap: _toggleSearch,
+                          size: _iconSize, 
+                          onTap: _toggleSearch
                         ),
                       ),
                     ],
