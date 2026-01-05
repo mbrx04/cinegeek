@@ -1,13 +1,12 @@
 import 'package:flutter/material.dart';
+import '../../model/movie.dart';
+import '../../services/tmdb_service.dart';
+import '../../services/weekend_context_manager.dart';
 import '../widgets/top_bar.dart';
 import '../widgets/movie_carousel.dart';
-
-// IMPORT PER PROVA
-import 'LogInSignUp/auth_landing_page.dart';
 import '../widgets/cineGlassButton.dart';
-// FINE IMPORT PROVA
+import 'LogInSignUp/auth_landing_page.dart';
 
-//HARDCODED PER LISTA DEI FILM DA MODIFICARE POI CON DATI VERI
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
   @override
@@ -15,23 +14,30 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  final List<Map<String, String>> testMovies = [
-    {
-      "title": "The Fast and The Furious",
-      "imageUrl":
-      "https://www.themoviedb.org/t/p/w1280/fMhRkSfn1gA7RriWlSAk9yCuZWp.jpg",
-    },
-    {
-      "title": "Fast X",
-      "imageUrl":
-      "https://www.themoviedb.org/t/p/w1280/hC6mLdlgpFU63FOduX80xaGevGj.jpg",
-    },
-    {
-      "title": "Gran Turismo - La storia di un sogno impossibile",
-      "imageUrl":
-      "https://www.themoviedb.org/t/p/w1280/34moeAXmzjYgDq73yzy1kuYe4di.jpg",
-    }
-  ];
+
+  final WeekendContextManager _weekendManager = WeekendContextManager();
+
+  final TmdbService _tmdbService = TmdbService();
+
+  late Future<List<Movie>> _watchedMovies;
+  late Future<List<Movie>> _popularMovies;
+  late Future<List<Movie>> _topRatedMovies;
+  late Future<List<Movie>> _upcomingMovies; //FORSE si puo usare per mandare notifiche prima dell'uscita dei fil
+
+  //cominciano le richieste appena si entra nella home
+  @override
+  void initState(){
+    super.initState();
+
+    _weekendManager.init();
+
+    //PER LA SIMULAZIONE DEI VISTI E NO VOTATI
+    _watchedMovies = _tmdbService.getWatchedMoviesPlaceholder();
+
+    _popularMovies = _tmdbService.getPopularMovies();
+    _topRatedMovies = _tmdbService.getTopRatedMovies();
+    _upcomingMovies = _tmdbService.getUpcomingMovies();
+  }                  
 
   @override
   Widget build(BuildContext context) {
@@ -41,31 +47,24 @@ class _HomePageState extends State<HomePage> {
         children: [
           const TopBarLogo(),
 
-          //tutti i caroselli scrollabili
           Expanded(
             child: SingleChildScrollView(
-              padding: const EdgeInsets.only(bottom: 120),  //padding per la navbar, si può modificare in base a quanto vogliamo si fermino i caroselli dalla navbar
+              padding: const EdgeInsets.only(bottom: 120),
               child: Column(
                 children: [
-                  MovieCarousel(
-                    title: "Film visti e non votati",
-                    movies: testMovies,
-                    heroTagPrefix: "home_visti",
-                  ),
-                  MovieCarousel(
-                    title: "Consigliati per te",
-                    movies: testMovies,
-                    heroTagPrefix: "home_consigiati",
-                  ),
-                  MovieCarousel(
-                    title: "Popolari",
-                    movies: testMovies,
-                    heroTagPrefix: "home_popolari",
-                  ),
+                  
+                  //visti e non votati ma per ora c'è collegato 
+                  _buildCarouselSection("Visti e non votati", _watchedMovies, "hero_watched"),
 
+                  //popolari in generale
+                  _buildCarouselSection("Popolari", _popularMovies, "hero_top"),
 
-                  // prova logIn DA CANCELLARE IN SEGUITO
-                  const SizedBox(height: 24), // spazio tra caroselli e bottone
+                  //più votati in generale
+                  _buildCarouselSection("Più votati", _topRatedMovies, "hero_top"),
+
+                  const SizedBox(height: 24),
+
+                  //  prova logIn DA CANCELLARE IN SEGUITO
                   CineGlassButton(
                     label: "Login / Registrazione",
                     onTap: () {
@@ -79,15 +78,46 @@ class _HomePageState extends State<HomePage> {
                   ),
                   const SizedBox(height: 24), // padding finale
                   // FINE PROVA
-
-
-
                 ],
               ),
             ),
           ),
         ],
       ),
+    );
+  }
+
+  //evita di ripetere il builder 3 volte
+  Widget _buildCarouselSection(String title, Future<List<Movie>> future, String tagPrefix) {
+    return FutureBuilder<List<Movie>>(
+      future: future,
+      builder: (context, snapshot) {
+        //controlla se sta caricando
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return SizedBox(
+            height: 300,
+            child: const Center(child: CircularProgressIndicator(color: Color.fromARGB(255, 204, 255, 0))),
+          );
+        } 
+        //controlla se c'è errore
+        else if (snapshot.hasError) {
+          return Padding(
+            padding: const EdgeInsets.all(20.0),
+            child: Text("Errore: ${snapshot.error}", style: const TextStyle(color: Colors.red)),
+          );
+        } 
+        //controlla se dati sono vuoti
+        else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+          return const SizedBox.shrink();
+        }
+
+        //mostra il carosello
+        return MovieCarousel(
+          title: title,
+          movies: snapshot.data!,
+          heroTagPrefix: tagPrefix,
+        );
+      },
     );
   }
 }

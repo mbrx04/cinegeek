@@ -32,7 +32,7 @@ class RatingCircle extends StatelessWidget {
           CircularProgressIndicator(
             value: percent,
             strokeWidth: 6,
-            backgroundColor: Colors.white12,
+            backgroundColor: const Color.fromARGB(227, 148, 139, 139),
             valueColor: AlwaysStoppedAnimation<Color>(color),
           ),
           Center(
@@ -41,7 +41,6 @@ class RatingCircle extends StatelessWidget {
               style: TextStyle(
                 fontSize: size * 0.28,
                 fontWeight: FontWeight.bold,
-                color: Colors.white,
               ),
             ),
           )

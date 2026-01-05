@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
+import '../../model/movie.dart';
 import '../pages/movie_detail.dart';
+import '../widgets/movie_preview_popup.dart';
 
 class MovieCarousel extends StatelessWidget {
   final String title;
-  final List<Map<String, String>> movies;
+  final List<Movie> movies;
   final String heroTagPrefix;
 
   const MovieCarousel({
@@ -15,6 +17,9 @@ class MovieCarousel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    if (movies.isEmpty){
+      return const SizedBox.shrink(); //se non ci sono film non mostra nulla
+    }
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -37,24 +42,44 @@ class MovieCarousel extends StatelessWidget {
             itemBuilder: (context, index) {
               final movie = movies[index];
               //tag unico per l'animazione Hero
-              final String heroTag = '${heroTagPrefix}_$index';
+              final String heroTag = '${heroTagPrefix}_${movie.id}';
 
               return GestureDetector(
-                onTap: () {
+                onTap: () { //tap normale
                   //navigazione a detail page con animaizone hero
                   Navigator.push(
                     context,
                     MaterialPageRoute(
                       builder: (_) => MovieDetailPage(
-                        title: movie['title']!,
-                        imageUrl: movie['imageUrl']!,
-                        description: "Descrizione non disponibile per ora...",
-                        voteAverage: 7.5, //voto fake perchè non ci sono le API
+                        title: movie.title,
+                        imageUrl: movie.fullPosterUrl,
+                        description: movie.overview,
+                        voteAverage: movie.voteAverage,
                         heroTag: heroTag,
                       ),
                     ),
                   );
                 },
+
+                //apertura popup
+                onLongPress: () {
+                  Navigator.of(context).push(
+                    PageRouteBuilder(
+                      opaque: false,
+                      barrierDismissible: true,
+                      barrierColor: Colors.black54,
+                      pageBuilder: (BuildContext context, _, __) {
+                        return MoviePreviewPopup(
+                          imageUrl: movie.fullPosterUrl,
+                          title: movie.title,
+                          description: movie.overview,
+                          heroTag: heroTag,
+                        );
+                      },
+                    ),
+                  );
+                },
+
                 child: Container(
                   width: 150, //larghezza locandina
                   margin: const EdgeInsets.symmetric(horizontal: 8),
@@ -68,18 +93,13 @@ class MovieCarousel extends StatelessWidget {
                           child: ClipRRect(
                             borderRadius: BorderRadius.circular(12),
                             child: Image.network(
-                              movie['imageUrl']!,
+                              movie.fullPosterUrl,
                               fit: BoxFit.cover,
                               width: double.infinity,
-                              // Gestione errore immagine
-                              errorBuilder: (ctx, error, stack) {
-                                return Container(
-                                  color: Colors.grey[800],
-                                  child: const Center(
-                                    child: Icon(Icons.broken_image, color: Colors.white54),
-                                  ),
-                                );
-                              },
+                              errorBuilder: (_, __, ___) => Container(
+                                color: Colors.grey[800],
+                                child: const Icon(Icons.broken_image, color:Colors.white54),
+                              )
                             ),
                           ),
                         ),
@@ -87,13 +107,10 @@ class MovieCarousel extends StatelessWidget {
                       const SizedBox(height: 5),
                       //titolo sotto la locandina nel carosello
                       Text(
-                        movie['title']!,
+                        movie.title,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
-                        style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold
-                        ),
+                        style: Theme.of(context).textTheme.labelMedium?.copyWith(fontWeight: FontWeight.bold),
                       ),
                     ],
                   ),

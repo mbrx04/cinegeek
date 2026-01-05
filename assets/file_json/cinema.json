@@ -1,0 +1,342 @@
+[
+  {
+    "name": "UniCal Fallback (Rende - Test)",
+    "lat": 39.362240,
+    "lng": 16.225433
+  },
+  {
+    "name": "Cinema Garden (Rende - CS)",
+    "lat": 39.325152,
+    "lng": 16.241778
+  },
+  {
+    "name": "Cinema Andromeda River (Zumpano - CS)",
+    "lat": 39.314964,
+    "lng": 16.263897
+  },
+  {
+    "name": "Metropolis Multicine (Rende - CS)",
+    "lat": 39.328188,
+    "lng": 16.242672
+  },
+  {
+    "name": "Cinema Citrigno (Cosenza)",
+    "lat": 39.296537,
+    "lng": 16.254088
+  },
+  {
+    "name": "Cinema San Nicola (Cosenza)",
+    "lat": 39.292556,
+    "lng": 16.256105
+  },
+  {
+    "name": "Cinema Teatro A. Tieri (Cosenza)",
+    "lat": 39.290873,
+    "lng": 16.252729
+  },
+  {
+    "name": "Cinema Teatro Metropol (Corigliano - CS)",
+    "lat": 39.628051,
+    "lng": 16.518803
+  },
+  {
+    "name": "Cinema San Marco (Rossano - CS)",
+    "lat": 39.597105,
+    "lng": 16.640440
+  },
+  {
+    "name": "Cinema Ciminelli (Castrovillari - CS)",
+    "lat": 39.812505,
+    "lng": 16.203472
+  },
+  {
+    "name": "Cinema Atomic Cafè (Castrovillari - CS)",
+    "lat": 39.812325,
+    "lng": 16.206513
+  },
+  {
+    "name": "Cinema Teatro Odeon (Paola - CS)",
+    "lat": 39.360307,
+    "lng": 16.039117
+  },
+  {
+    "name": "Cinema Teatro Sicoli (Amantea - CS)",
+    "lat": 39.135083,
+    "lng": 16.074986
+  },
+  {
+    "name": "Cinema Vittoria (Diamante - CS)",
+    "lat": 39.678056,
+    "lng": 15.821389
+  },
+  {
+    "name": "Nuovo Cinema Arena (Scalea - CS)",
+    "lat": 39.807247,
+    "lng": 15.792159
+  },
+  {
+    "name": "Cinema Teatro Italia (S. Giovanni in Fiore - CS)",
+    "lat": 39.253864,
+    "lng": 16.697325
+  },
+  {
+    "name": "The Space Cinema (Catanzaro Lido)",
+    "lat": 38.857351,
+    "lng": 16.630395
+  },
+  {
+    "name": "The Space Cinema (Lamezia Terme)",
+    "lat": 38.898773,
+    "lng": 16.350023
+  },
+  {
+    "name": "Cinema Nuovo (Siderno - RC)",
+    "lat": 38.264641,
+    "lng": 16.293273
+  },
+  {
+    "name": "Cinema Vittoria (Locri - RC)",
+    "lat": 38.236684,
+    "lng": 16.263356
+  },
+  {
+    "name": "Cinema Garibaldi (Polistena - RC)",
+    "lat": 38.408398,
+    "lng": 16.073641
+  },
+  {
+    "name": "The Space Cinema Moderno (Roma)",
+    "lat": 41.902302,
+    "lng": 12.496924
+  },
+  {
+    "name": "The Space Cinema Parco de' Medici (Roma)",
+    "lat": 41.815000,
+    "lng": 12.416000
+  },
+  {
+    "name": "UCI Cinemas Porta di Roma (Roma)",
+    "lat": 41.971500,
+    "lng": 12.541000
+  },
+  {
+    "name": "UCI Cinemas Roma Est (Roma)",
+    "lat": 41.913500,
+    "lng": 12.607000
+  },
+  {
+    "name": "Odeon (Milano)",
+    "lat": 45.465457,
+    "lng": 9.189764
+  },
+  {
+    "name": "UCI Cinemas Bicocca (Milano)",
+    "lat": 45.523000,
+    "lng": 9.215000
+  },
+  {
+    "name": "Cinema Metropolitan (Napoli)",
+    "lat": 40.835934,
+    "lng": 14.240375
+  },
+  {
+    "name": "The Space Cinema (Napoli)",
+    "lat": 40.826000,
+    "lng": 14.193000
+  },
+  {
+    "name": "The Space Cinema (Nola)",
+    "lat": 40.940000,
+    "lng": 14.530000
+  },
+  {
+    "name": "UCI Cinemas Torino Lingotto (Torino)",
+    "lat": 45.032000,
+    "lng": 7.665000
+  },
+  {
+    "name": "The Space Cinema (Torino)",
+    "lat": 45.030000,
+    "lng": 7.660000
+  },
+  {
+    "name": "UCI Cinemas Bologna (Bologna)",
+    "lat": 44.510000,
+    "lng": 11.360000
+  },
+  {
+    "name": "The Space Cinema (Bologna)",
+    "lat": 44.512000,
+    "lng": 11.365000
+  },
+  {
+    "name": "UCI Cinemas Firenze (Firenze)",
+    "lat": 43.795000,
+    "lng": 11.220000
+  },
+  {
+    "name": "The Space Cinema (Firenze)",
+    "lat": 43.800000,
+    "lng": 11.210000
+  },
+  {
+    "name": "UCI Cinemas Fiumara (Genova)",
+    "lat": 44.410000,
+    "lng": 8.890000
+  },
+  {
+    "name": "The Space Cinema (Genova)",
+    "lat": 44.408000,
+    "lng": 8.920000
+  },
+  {
+    "name": "UCI Cinemas Bari (Bari)",
+    "lat": 41.100000,
+    "lng": 16.890000
+  },
+  {
+    "name": "The Space Cinema (Casamassima - Bari)",
+    "lat": 40.950000,
+    "lng": 16.920000
+  },
+  {
+    "name": "UCI Cinemas Palermo (Palermo)",
+    "lat": 38.100000,
+    "lng": 13.330000
+  },
+  {
+    "name": "The Space Cinema (Belpasso - Catania)",
+    "lat": 37.580000,
+    "lng": 14.980000
+  },
+  {
+    "name": "UCI Cinemas (Catania)",
+    "lat": 37.520000,
+    "lng": 15.050000
+  },
+  {
+    "name": "UCI Cinemas Verona (Verona)",
+    "lat": 45.390000,
+    "lng": 11.000000
+  },
+  {
+    "name": "The Space Cinema (Verona)",
+    "lat": 45.400000,
+    "lng": 11.010000
+  },
+  {
+    "name": "UCI Cinemas Mestre (Venezia)",
+    "lat": 45.490000,
+    "lng": 12.220000
+  },
+  {
+    "name": "The Space Cinema (Limena - Padova)",
+    "lat": 45.450000,
+    "lng": 11.850000
+  },
+  {
+    "name": "UCI Cinemas Orio (Bergamo)",
+    "lat": 45.665000,
+    "lng": 9.695000
+  },
+  {
+    "name": "The Space Cinema (Parma)",
+    "lat": 44.810000,
+    "lng": 10.335000
+  },
+  {
+    "name": "UCI Cinemas Romagna (Savignano)",
+    "lat": 44.100000,
+    "lng": 12.400000
+  },
+  {
+    "name": "The Space Cinema (Sestu - Cagliari)",
+    "lat": 39.300000,
+    "lng": 9.100000
+  },
+  {
+    "name": "UCI Cinemas Cagliari (Cagliari)",
+    "lat": 39.230000,
+    "lng": 9.110000
+  },
+  {
+    "name": "The Space Cinema (Salerno)",
+    "lat": 40.660000,
+    "lng": 14.780000
+  },
+  {
+    "name": "The Space Cinema (Trieste)",
+    "lat": 45.645000,
+    "lng": 13.780000
+  },
+  {
+    "name": "The Space Cinema (Surbo - Lecce)",
+    "lat": 40.380000,
+    "lng": 18.150000
+  },
+  {
+    "name": "The Space Cinema (Montesilvano - Pescara)",
+    "lat": 42.480000,
+    "lng": 14.150000
+  },
+  {
+    "name": "The Space Cinema (Corciano - Perugia)",
+    "lat": 43.120000,
+    "lng": 12.350000
+  },
+  {
+    "name": "The Space Cinema (Terni)",
+    "lat": 42.570000,
+    "lng": 12.640000
+  },
+  {
+    "name": "The Space Cinema (Livorno)",
+    "lat": 43.550000,
+    "lng": 10.315000
+  },
+  {
+    "name": "The Space Cinema (Rozzano - Milano)",
+    "lat": 45.380000,
+    "lng": 9.170000
+  },
+  {
+    "name": "The Space Cinema (Vimercate)",
+    "lat": 45.610000,
+    "lng": 9.370000
+  },
+  {
+    "name": "The Space Cinema (Cerro Maggiore)",
+    "lat": 45.590000,
+    "lng": 8.950000
+  },
+  {
+    "name": "The Space Cinema (Beinasco - Torino)",
+    "lat": 45.015000,
+    "lng": 7.590000
+  },
+  {
+    "name": "The Space Cinema (Montebello)",
+    "lat": 44.980000,
+    "lng": 9.100000
+  },
+  {
+    "name": "The Space Cinema (Guidonia)",
+    "lat": 41.990000,
+    "lng": 12.720000
+  },
+  {
+    "name": "The Space Cinema (Silea - Treviso)",
+    "lat": 45.650000,
+    "lng": 12.300000
+  },
+  {
+    "name": "The Space Cinema (Vicenza)",
+    "lat": 45.540000,
+    "lng": 11.610000
+  },
+  {
+    "name": "The Space Cinema (Pradamano - Udine)",
+    "lat": 46.035000,
+    "lng": 13.280000
+  }
+]

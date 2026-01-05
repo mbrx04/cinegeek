@@ -1,4 +1,7 @@
+import 'dart:async';  //SEMPRE PER EVITARE DI FARE CHIAMATE INUTILI ALL'API
 import 'package:flutter/material.dart';
+import '../../model/movie.dart';
+import '../../services/tmdb_service.dart';
 import '../widgets/star_rating.dart';
 import '../widgets/circle_button.dart';
 
@@ -10,61 +13,82 @@ class WriteReviewPage extends StatefulWidget {
 }
 
 class _WriteReviewPageState extends State<WriteReviewPage> {
+  final TmdbService _tmdbService = TmdbService();
+  Timer? _debounce;
   String? _selectedMovieTitle;
   String? _selectedMovieImage;
   double _currentRating = 3.0;
   final TextEditingController _reviewController = TextEditingController();
   final TextEditingController _movieSearchController = TextEditingController();
 
-  List<Map<String, String>> _searchResults = [];
+  List<Movie> _searchResults = [];
   bool _isSearchingMovie = false;
 
-  //lista hardcoded per avere un elenco finto al momento
-  final List<Map<String, String>> _allMovies = [
-    {"title": "Fast X", "image": "https://www.themoviedb.org/t/p/w200/hC6mLdlgpFU63FOduX80xaGevGj.jpg"},
-    {"title": "F1", "image": "https://www.themoviedb.org/t/p/w1280/tGMs4Ji6CH33GIx5aHAXc0uhu3F.jpg"},
-    {"title": "Overdrive", "image": "https://www.themoviedb.org/t/p/w1280/a0hTRjis1cxwmjOuBaS7WdDG3dj.jpg"},
-  ];
-
-  //ricerca locale
+  //ricerca
   void _onSearchChanged(String query) {
-    if (query.isEmpty) {
-      setState(() {
-        _searchResults = [];
-        _isSearchingMovie = false;
-      });
-      return;
-    }
-    setState(() {
-      _isSearchingMovie = true;
-      _searchResults = _allMovies
-          .where((m) => m['title']!.toLowerCase().contains(query.toLowerCase()))
-          .toList();
+    if (_debounce?.isActive ?? false) _debounce!.cancel();
+
+    _debounce = Timer(const Duration(milliseconds: 1500), () async {
+      if (query.isEmpty) {
+        setState(() {
+          _searchResults = [];
+          _isSearchingMovie = false;
+        });
+        return;
+      }
+
+      final results = await _tmdbService.searchMovies(query);
+
+      if (mounted) {
+        setState(() {
+          _searchResults = results;
+          _isSearchingMovie = true;
+        });
+      }
     });
   }
 
-  //cliccando su un film dalla lista che si espande
-  void _selectMovie(String title, String image) {
+  void _selectMovie(Movie movie) {
     setState(() {
-      _selectedMovieTitle = title;
-      _selectedMovieImage = image;
+      _selectedMovieTitle = movie.title;
+      _selectedMovieImage = movie.fullPosterUrl;
       _isSearchingMovie = false;
-      _movieSearchController.text = title;  //si riempe il campo di ricerca automaticamente
-      _searchResults = [];  //chiude la tendina dei risultati
+      _movieSearchController.text = movie.title;
+      _searchResults = [];
     });
-    FocusScope.of(context).unfocus(); //chiude la tastiera
+    FocusScope.of(context).unfocus();
   }
 
-  BoxDecoration _getInputBoxDecoration() {
-    return BoxDecoration(
-      color: Colors.black.withAlpha(153),
-      borderRadius: BorderRadius.circular(35),
-      border: Border.all(color: Colors.white.withAlpha(26), width: 1),
-    );
+  @override
+  void dispose() {
+    _debounce?.cancel();
+    _reviewController.dispose();
+    _movieSearchController.dispose();
+    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
+    final bool isDark = Theme.of(context).brightness == Brightness.dark;  //rileva il tema
+
+    //definisco i colori che saranno dinamici
+    final Color inputFillColor = isDark 
+        ? Colors.black.withAlpha(153) 
+        : Colors.black.withAlpha(10);
+
+    final Color inputBorderColor = isDark 
+        ? Colors.white.withAlpha(26) 
+        : Colors.black.withAlpha(26);
+
+    //colori del testo semrpe per chiaro e scuro
+    final Color textColor = isDark ? Colors.white : Colors.black;
+    final Color hintColor = isDark ? Colors.white70 : Colors.black54;
+
+    //colori per elenco dei film che si espande
+    final Color dropdownColor = isDark 
+        ? Colors.black.withAlpha(230) 
+        : Colors.white.withAlpha(240);
+
     return Scaffold(
       backgroundColor: Theme.of(context).colorScheme.surface,
       body: Stack(
@@ -74,44 +98,76 @@ class _WriteReviewPageState extends State<WriteReviewPage> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text("Scrivi Recensione", //titolo della pagina
-                style: Theme.of(context).textTheme.headlineLarge),
+                Text("Scrivi Recensione",
+                    style: Theme.of(context).textTheme.headlineLarge),
                 const SizedBox(height: 30),
 
                 //ricerca film
-                const Text("Quale film vuoi recensire?", style: TextStyle(fontSize: 16, color: Colors.grey)),
+                const Text("Quale film vuoi recensire?", 
+                    style: TextStyle(fontSize: 16, color: Colors.grey)),
                 const SizedBox(height: 10),
+
                 Container(
-                  decoration: _getInputBoxDecoration(),
+                  decoration: BoxDecoration(
+                    color: inputFillColor,
+                    borderRadius: BorderRadius.circular(35),
+                    border: Border.all(color: inputBorderColor, width: 1),
+                  ),
                   padding: const EdgeInsets.symmetric(horizontal: 16),
                   child: TextField(
                     controller: _movieSearchController,
                     onChanged: _onSearchChanged,
-                    style: const TextStyle(color: Colors.white),
-                    decoration: const InputDecoration(
+                    style: TextStyle(color: textColor),
+                    decoration: InputDecoration(
                       hintText: "Cerca il titolo...",
-                      hintStyle: TextStyle(color: Colors.white70),
-                      icon: Icon(Icons.search, color: Colors.white),
+                      hintStyle: TextStyle(color: hintColor),
+                      icon: Icon(Icons.search, color: textColor),
                       border: InputBorder.none,
                     ),
                   ),
                 ),
 
-                //risultati di ricerca
                 if (_isSearchingMovie && _searchResults.isNotEmpty)
                   Container(
                     margin: const EdgeInsets.only(top: 8),
+                    constraints: const BoxConstraints(maxHeight: 250),
                     decoration: BoxDecoration(
-                      color: Colors.black.withAlpha(204),
+                      color: dropdownColor,
                       borderRadius: BorderRadius.circular(20),
-                      border: Border.all(color: Colors.white10),
+                      border: Border.all(color: inputBorderColor),
                     ),
-                    child: Column(
-                      children: _searchResults.map((movie) => ListTile(
-                        leading: Image.network(movie['image']!, width: 30),
-                        title: Text(movie['title']!, style: const TextStyle(color: Colors.white)),
-                        onTap: () => _selectMovie(movie['title']!, movie['image']!),
-                      )).toList(),
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(20),
+                      child: ListView.separated(
+                        padding: EdgeInsets.zero,
+                        shrinkWrap: true,
+                        itemCount: _searchResults.length,
+                        separatorBuilder: (ctx, i) => Divider(color: inputBorderColor, height: 1),
+                        itemBuilder: (context, index) {
+                          final movie = _searchResults[index];
+                          return ListTile(
+                            leading: ClipRRect(
+                              borderRadius: BorderRadius.circular(4),
+                              child: Image.network(
+                                movie.fullPosterUrl,
+                                width: 40,
+                                height: 60,
+                                fit: BoxFit.cover,
+                                errorBuilder: (_,__,___) => Icon(Icons.movie, color: textColor),
+                              ),
+                            ),
+                            title: Text(
+                              movie.title,
+                              style: TextStyle(color: textColor, fontWeight: FontWeight.w600),
+                            ),
+                            subtitle: Text(
+                              movie.releaseDate.split('-').first,
+                              style: TextStyle(color: hintColor, fontSize: 12),
+                            ),
+                            onTap: () => _selectMovie(movie),
+                          );
+                        },
+                      ),
                     ),
                   ),
 
@@ -122,14 +178,29 @@ class _WriteReviewPageState extends State<WriteReviewPage> {
                   Center(
                     child: Column(
                       children: [
-                        ClipRRect(
-                          borderRadius: BorderRadius.circular(16),
-                          child: Image.network(_selectedMovieImage!, height: 140),
+                        Container(
+                          decoration: BoxDecoration(
+                            boxShadow: [
+                              BoxShadow(  //ombre
+                                  color: isDark ? Colors.black.withAlpha(100) : Colors.black.withAlpha(40), 
+                                  blurRadius: 15, 
+                                  spreadRadius: 2)
+                            ]
+                          ),
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.circular(16),
+                            child: Image.network(
+                              _selectedMovieImage!,
+                              height: 180,
+                              fit: BoxFit.cover,
+                            ),
+                          ),
                         ),
-                        const SizedBox(height: 12),
+                        const SizedBox(height: 16),
                         Text(
                           _selectedMovieTitle!,
-                          style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                          textAlign: TextAlign.center,
+                          style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
                         ),
                       ],
                     ),
@@ -156,24 +227,29 @@ class _WriteReviewPageState extends State<WriteReviewPage> {
                 const SizedBox(height: 30),
 
                 //input recensione dell'utente
-                const Text("La tua opinione (max 100 car.)", style: TextStyle(fontSize: 16, color: Colors.grey)),
+                const Text("La tua opinione (max 100 car.)",
+                    style: TextStyle(fontSize: 16, color: Colors.grey)),
                 const SizedBox(height: 10),
+                
+                //box testo in cui si scrive la recensione
                 Container(
-                  decoration: _getInputBoxDecoration().copyWith(
-                    borderRadius: BorderRadius.circular(20)
+                  decoration: BoxDecoration(
+                    color: inputFillColor,
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(color: inputBorderColor, width: 1),
                   ),
                   padding: const EdgeInsets.all(16),
                   child: TextField(
                     controller: _reviewController,
                     maxLength: 100,
                     maxLines: 4,
-                    style: const TextStyle(color: Colors.white),
-                    onChanged: (_) => setState(() {}), 
-                    decoration: const InputDecoration(
+                    style: TextStyle(color: textColor),
+                    onChanged: (_) => setState(() {}),
+                    decoration: InputDecoration(
                       hintText: "Scrivi qui...",
-                      hintStyle: TextStyle(color: Colors.white70),
+                      hintStyle: TextStyle(color: hintColor),
                       border: InputBorder.none,
-                      counterStyle: TextStyle(color: Colors.white54),
+                      counterStyle: TextStyle(color: hintColor),
                     ),
                   ),
                 ),
@@ -185,19 +261,20 @@ class _WriteReviewPageState extends State<WriteReviewPage> {
                   width: double.infinity,
                   height: 55,
                   child: ElevatedButton(
-                    onPressed: (_selectedMovieTitle != null && _reviewController.text.isNotEmpty) 
-                      ? () {
-                          print("Pubblicata: $_selectedMovieTitle");
-                          Navigator.pop(context);
-                        } 
-                      : null,
+                    onPressed: (_selectedMovieTitle != null && _reviewController.text.isNotEmpty)
+                        ? () {
+                            print("Pubblicata: $_selectedMovieTitle");
+                            Navigator.pop(context);
+                          }
+                        : null,
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Theme.of(context).colorScheme.primary,
                       foregroundColor: Colors.black,
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(35)),
                       elevation: 5,
                     ),
-                    child: const Text("Pubblica Recensione", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                    child: const Text("Pubblica Recensione",
+                        style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
                   ),
                 ),
               ],

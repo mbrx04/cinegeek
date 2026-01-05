@@ -27,6 +27,7 @@ dependencies:
   anim_search_bar: ^2.0.3
   google_fonts: ^6.3.3
   flutter_rating_bar: ^4.0.1
+  workmanager: ^0.6.0
 
 dev_dependencies:
   flutter_test:
@@ -42,3 +43,4 @@ flutter:
     - assets/images/logo_intero.png
     - assets/images/solo_logo.png
     - assets/images/solo_testo.png
+    - assets/file_json/cinema.json

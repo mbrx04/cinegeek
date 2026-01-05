@@ -23,22 +23,33 @@ class ReviewCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final bool isDark = Theme.of(context).brightness == Brightness.dark;  //rilvea il tema
+
+    //definisco i colori dinamici per chiaro e scuro
+    final Color cardBackground = isDark 
+        ? Colors.white.withAlpha(13) 
+        : Colors.black.withAlpha(10); 
+
+    final Color cardBorder = isDark 
+        ? Colors.white.withAlpha(26) 
+        : Colors.black.withAlpha(30);
+
     return GestureDetector(
       onTap: onTap,
       child: Container(
         margin: const EdgeInsets.only(bottom: 16),
         padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
-          color: Colors.white.withAlpha(13),
+          color: cardBackground,
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: Colors.white.withAlpha(26)),
+          border: Border.all(color: cardBorder),//bordo dinamico per tema chiaro e scuro
         ),
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             //copertina piccola con hero
             Hero(
-              tag: heroTag ?? posterUrl, //se c'è il tag viene usato altrimenti si usa l'url
+              tag: heroTag ?? posterUrl, 
               child: ClipRRect(
                 borderRadius: BorderRadius.circular(8),
                 child: Image.network(
@@ -53,7 +64,7 @@ class ReviewCard extends StatelessWidget {
             
             const SizedBox(width: 12),
 
-            //contenuto della recensione
+            //vero contenuto della recensione
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -67,7 +78,8 @@ class ReviewCard extends StatelessWidget {
                   const SizedBox(height: 4),
                   Row(
                     children: [
-                      const Icon(Icons.person, size: 14, color: Colors.grey),
+                      //icona dell'utente
+                      Icon(Icons.person, size: 14, color: isDark ? Colors.grey : Colors.black54),
                       const SizedBox(width: 4),
                       Text(
                         username,

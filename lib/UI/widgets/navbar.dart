@@ -1,6 +1,7 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'circle_button.dart';
+import 'dart:async';  //FONDAMENTALE PER NON ESSERE FOTTUTI! serveper non fare chiamate all'API ogni volta che si digita una lettera ma solo dopo un tempo prestabilito
 
 typedef PageChanged = void Function(int pageIndex);
 typedef SearchChanged = void Function(String text);
@@ -31,6 +32,9 @@ class LiquidNavBarState extends State<LiquidNavBar>
   bool _isSearchOpened = false;
   final TextEditingController _searchController = TextEditingController();
 
+  //timer per aspettare prima di fare la ricerca
+  Timer? _debounce;
+
   //animazione
   late AnimationController _animController;
   late Animation<double> _widthAnim;
@@ -53,6 +57,7 @@ class LiquidNavBarState extends State<LiquidNavBar>
         FocusScope.of(context).unfocus(); //chiude la tastiera
         _animController.reverse(); //stop animazione
       });
+      if (_debounce?.isActive ?? false) _debounce!.cancel();
       widget.onSearchChanged?.call(""); 
     }
   }
@@ -69,7 +74,16 @@ class LiquidNavBarState extends State<LiquidNavBar>
       duration: const Duration(milliseconds: 300),
     );
 
-    _searchController.addListener(() {
+    _searchController.addListener(_onSearchInputChanged);
+  }
+
+  //----------------IMPORTANTISSIMO SEMPRE PER NON ESSERE FOTTUI E FARE CHIAMATE INUTILI!!!!!!!
+  void _onSearchInputChanged() {
+    //se c'è un timer attivo e viene scritta una cosa tramite la tastiera, anche una sola lettera lo annulla
+    if (_debounce?.isActive ?? false) _debounce!.cancel();
+    //ne fa partire uno nuovo sempre di 500 ms
+    _debounce = Timer(const Duration(milliseconds: 1000), () {
+      //se si smette di scrivere per 1 secondo allora cerca
       widget.onSearchChanged?.call(_searchController.text);
     });
   }
@@ -86,6 +100,7 @@ class LiquidNavBarState extends State<LiquidNavBar>
 
   @override
   void dispose() {
+    _debounce?.cancel();
     _animController.dispose();
     _searchController.dispose();
     super.dispose();
@@ -131,7 +146,20 @@ class LiquidNavBarState extends State<LiquidNavBar>
   @override
   Widget build(BuildContext context) {
     final screenWidth = MediaQuery.of(context).size.width;
-    final double maxSearchWidth = screenWidth - 40; //larghezza massima search bar
+    final double maxSearchWidth = screenWidth - 40;
+
+    final bool isDark = Theme.of(context).brightness == Brightness.dark;
+    
+    final Color glassBackground = isDark 
+        ? Colors.black.withAlpha(90)  //opacità dark mode
+        : Colors.white.withAlpha(90); //opacità light mode
+
+    final Color glassBorder = isDark 
+        ? Colors.white.withAlpha(30) 
+        : Colors.black.withAlpha(20);
+
+    final Color contentColor = isDark ? Colors.white : Colors.black;
+    final Color hintColor = isDark ? Colors.white70 : Colors.black54;
 
     _widthAnim = Tween<double>(
       begin: _navSize,
@@ -140,7 +168,7 @@ class LiquidNavBarState extends State<LiquidNavBar>
 
     return Stack(
       children: [
-        //nav bar
+        //nav bar principale
         if (!_isSearchOpened)
           Positioned(
             bottom: 20,
@@ -153,7 +181,6 @@ class LiquidNavBarState extends State<LiquidNavBar>
               }),
               onHorizontalDragUpdate: (details) {
                 setState(() => _dragPosition = details.localPosition);
-                //calcolo larghezza area drag
                 double dragAreaWidth = screenWidth - (50 + _navSize);
                 _onDragUpdate(details.localPosition, dragAreaWidth);
               },
@@ -164,14 +191,15 @@ class LiquidNavBarState extends State<LiquidNavBar>
                   filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
                   child: Container(
                     height: _navSize,
-                    decoration: BoxDecoration(
-                      color: Colors.black.withAlpha(64),
+                    decoration: BoxDecoration(  //pillola flottante
+                      color: isDark ? Colors.black.withAlpha(80) : Colors.white.withAlpha(90),
                       borderRadius: BorderRadius.circular(35),
+                      border: Border.all(color: glassBorder, width: 1),
                     ),
                     child: Stack(
                       alignment: Alignment.center,
                       children: [
-                        //bolla animata
+                        //bolla di selezione
                         if (_isDragging && _dragPosition != null)
                           Positioned(
                             left: (_dragPosition!.dx - 30).clamp(0.0, screenWidth - (50 + _navSize) - 60),
@@ -179,7 +207,7 @@ class LiquidNavBarState extends State<LiquidNavBar>
                               width: 80,
                               height: 80,
                               decoration: BoxDecoration(
-                                color: Colors.white.withAlpha(38),
+                                color: isDark ? Colors.white.withAlpha(30) : Colors.black.withAlpha(15),
                                 shape: BoxShape.circle,
                               ),
                             ),
@@ -197,7 +225,7 @@ class LiquidNavBarState extends State<LiquidNavBar>
                                 height: isSelected ? 70 : 60,
                                 decoration: BoxDecoration(
                                   color: (!_isDragging && isSelected)
-                                      ? Colors.white.withAlpha(38)
+                                      ? (isDark ? Colors.white.withAlpha(30) : Colors.black.withAlpha(10))
                                       : Colors.transparent,
                                   shape: BoxShape.circle,
                                 ),
@@ -206,7 +234,7 @@ class LiquidNavBarState extends State<LiquidNavBar>
                                   size: 28,
                                   color: isSelected
                                       ? const Color.fromARGB(255, 204, 255, 0)
-                                      : Colors.white54,
+                                      : contentColor.withAlpha(128),
                                 ),
                               ),
                             );
@@ -220,7 +248,7 @@ class LiquidNavBarState extends State<LiquidNavBar>
             ),
           ),
 
-        //search bar che si estende
+        //search bar espandibile
         Positioned(
           bottom: 20,
           right: 20,
@@ -228,69 +256,73 @@ class LiquidNavBarState extends State<LiquidNavBar>
             animation: _widthAnim,
             builder: (context, child) {
               final double currentWidth = _widthAnim.value;
-              // 140 = icona (56) + gap (8) + min text field + close
-              final bool showContent = currentWidth > 140; 
-              //mostra bottone chiudi solo verso la fine dell'apertura
-              final bool showCloseBtn = currentWidth > 200; 
+              final bool showContent = currentWidth > 140;
+              final bool showCloseBtn = currentWidth > 200;
 
-              return Container(
-                width: currentWidth,
-                height: _navSize,
-                clipBehavior: Clip.antiAlias,
-                decoration: BoxDecoration(
-                  color: Colors.black.withAlpha(153),
-                  borderRadius: BorderRadius.circular(35), // Sempre circolare ai lati
-                  border: Border.all(color: Colors.white.withAlpha(26), width: 1),
-                ),
-                child: Row(
-                  mainAxisAlignment: _isSearchOpened ? MainAxisAlignment.start : MainAxisAlignment.center,
-                  children: [
-                    //lente sempre visibile
-                    SizedBox(
-                      width: _iconSize, // 56px fisso
-                      height: _iconSize,
-                      child: IconButton(
-                        onPressed: _toggleSearch,
-                        icon: const Icon(Icons.search, color: Colors.white, size: 24),
-                        padding: EdgeInsets.zero, //rimuove padding extra
-                      ),
+              return ClipRRect(
+                borderRadius: BorderRadius.circular(35),
+                child: BackdropFilter(
+                  filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
+                  child: Container(
+                    width: currentWidth,
+                    height: _navSize,
+                    decoration: BoxDecoration(
+                      color: glassBackground,
+                      borderRadius: BorderRadius.circular(35),
+                      border: Border.all(color: glassBorder, width: 1),
                     ),
-
-                    //campo di testo solo quando c'è spazio
-                    if (_isSearchOpened && showContent) ...[
-                      const SizedBox(width: 8),
-                      Expanded(
-                        child: TextField(
-                          controller: _searchController,
-                          autofocus: true,
-                          style: const TextStyle(color: Colors.white),
-                          decoration: const InputDecoration(
-                            hintText: "Cerca...",
-                            hintStyle: TextStyle(color: Colors.white70),
-                            border: InputBorder.none,
+                    child: Row(
+                      mainAxisAlignment: _isSearchOpened ? MainAxisAlignment.start : MainAxisAlignment.center,
+                      children: [
+                        //lente
+                        SizedBox(
+                          width: _iconSize,
+                          height: _iconSize,
+                          child: IconButton(
+                            onPressed: _toggleSearch,
+                            icon: Icon(Icons.search, color: contentColor, size: 24),
+                            padding: EdgeInsets.zero,
                           ),
-                          onSubmitted: (text) {
-                            print("Cerco: $text");
-                            _toggleSearch(); //chiudi se clicchi invio
-                          },
                         ),
-                      ),
-                    ],
 
-                    //bottone X per chiudere che esce solo a fine animaizone
-                    if (_isSearchOpened && showCloseBtn) ...[
-                      SizedBox(
-                        width: _iconSize,
-                        height: _iconSize,
-                        child: CircleButton(
-                          icon: Icons.close, 
-                          size: _iconSize,
-                          backgroundColor: Colors.transparent,
-                          onTap: _toggleSearch,
-                        ),
-                      ),
-                    ],
-                  ],
+                        //campo di testo
+                        if (_isSearchOpened && showContent) ...[
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: TextField(
+                              controller: _searchController,
+                              autofocus: true,
+                              style: TextStyle(color: contentColor),
+                              decoration: InputDecoration(
+                                hintText: "Cerca...",
+                                hintStyle: TextStyle(color: hintColor),
+                                border: InputBorder.none,
+                              ),
+                              onSubmitted: (text) {
+                                _toggleSearch();
+                              },
+                            ),
+                          ),
+                        ],
+
+                        //tasto X per chiudere
+                        if (_isSearchOpened && showCloseBtn) ...[
+                          SizedBox(
+                            width: _iconSize,
+                            height: _iconSize,
+                            child: CircleButton(
+                              icon: Icons.close,
+                              size: _iconSize,
+                              backgroundColor: Colors.transparent,
+                              borderColor: Colors.transparent,
+                              iconColor: contentColor,
+                              onTap: _toggleSearch,
+                            ),
+                          ),
+                        ],
+                      ],
+                    ),
+                  ),
                 ),
               );
             },

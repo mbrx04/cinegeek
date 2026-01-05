@@ -1,13 +1,50 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'services/weekend_context_manager.dart'; 
 import 'UI/pages/home.dart';
 import 'UI/pages/review.dart';
 import 'UI/pages/profile.dart';
 import 'UI/pages/search_result.dart';
 import 'UI/widgets/navbar.dart';
 import 'UI/theme.dart';
+import 'package:workmanager/workmanager.dart';
 
-void main() {
+@pragma('vm:entry-point')
+void callbackDispatcher() {
+  Workmanager().executeTask((task, inputData) async {
+    WidgetsFlutterBinding.ensureInitialized(); 
+    print("--- [Back end] Inizio: $task ---");
+    try {
+      WeekendContextManager manager = WeekendContextManager();
+      await manager.init(isBackground: true);
+      print("--- [Back end] OK ---");
+      return Future.value(true);
+    } catch (e) {
+      print("--- [Back end] ERRORE: $e ---");
+      return Future.value(false);
+    }
+  });
+}
+
+void main() async{
+  WidgetsFlutterBinding.ensureInitialized();  //inizializza binding
+  
+  Workmanager().initialize( //inizializzazione del workmanager per funzionare in background la posizione
+    callbackDispatcher,
+    isInDebugMode: false,
+  );
+
+  Workmanager().registerPeriodicTask( //ogni 15 minuti controlla la posizione
+    "1",
+    "check_cinema_proximity",
+    frequency: const Duration(minutes: 15),
+  );
+
+  final weekendMgr = WeekendContextManager();
+  await weekendMgr.init();
+
+  //AGGIUNGETE QUI I VOSTRI MANAGER PER LE ALTRE FUNZIONALITà
+
   runApp(const CineGeekApp());
 }
 
@@ -48,7 +85,7 @@ class _MainNavigationState extends State<MainNavigation> {
   static final List<Widget> _pages = <Widget>[
     const HomePage(),
     const ReviewsPage(),
-    const Profile(username: 'User', avatar: ''),
+  //  const Profile(username: 'User', avatar: ''),
   ];
 
   void _onItemTapped(int index) {

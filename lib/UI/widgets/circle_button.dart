@@ -6,6 +6,7 @@ class CircleButton extends StatelessWidget {
   final double size;
   final Color? backgroundColor;
   final Color? iconColor;
+  final Color? borderColor;
 
   const CircleButton({
     super.key,
@@ -14,23 +15,30 @@ class CircleButton extends StatelessWidget {
     this.size = 55,
     this.backgroundColor,
     this.iconColor,
+    this.borderColor,
   });
 
   @override
   Widget build(BuildContext context) {
+    final bool isDark = Theme.of(context).brightness == Brightness.dark;
+    
+    final Color defaultBorderColor = isDark 
+        ? Colors.white.withAlpha(26) 
+        : Colors.black.withAlpha(26);
+
     return Container(
-      width: size,  //larghezza
-      height: size, //altezza
+      width: size,
+      height: size,
       decoration: BoxDecoration(
-        color: backgroundColor ?? Colors.black.withAlpha(64),
-        shape: BoxShape.circle, //forma a cerchio
+        color: backgroundColor ?? (isDark ? Colors.black.withAlpha(64) : Colors.white.withAlpha(100)),
+        shape: BoxShape.circle,
         border: Border.all(
-          color: Colors.white.withAlpha(26),
-          width: 1, //spessore del bordo
+          color: borderColor ?? defaultBorderColor,
+          width: 1,
         ),
       ),
-      child: IconButton(  //icona nel bottone che viene scelta dove viene usato il widget
-        icon: Icon(icon, color: iconColor ?? Colors.white),
+      child: IconButton(
+        icon: Icon(icon, color: iconColor ?? (isDark ? Colors.white : Colors.black)),
         onPressed: onTap,
       ),
     );

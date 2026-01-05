@@ -86,7 +86,6 @@ class MovieDetailPage extends StatelessWidget {
                     style: const TextStyle(
                       fontSize: 16,
                       height: 1.4,
-                      color: Colors.white70,
                     ),
                   ),
                 ),
