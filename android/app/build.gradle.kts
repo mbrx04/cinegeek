@@ -1,5 +1,8 @@
 plugins {
     id("com.android.application")
+    // START: FlutterFire Configuration
+    id("com.google.gms.google-services")
+    // END: FlutterFire Configuration
     id("kotlin-android")
     // il plugin Flutter deve restare dopo Android e Kotlin
     id("dev.flutter.flutter-gradle-plugin")

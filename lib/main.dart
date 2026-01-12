@@ -8,6 +8,9 @@ import 'UI/pages/search_result.dart';
 import 'UI/widgets/navbar.dart';
 import 'UI/theme.dart';
 import 'package:workmanager/workmanager.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'firebase_options.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 @pragma('vm:entry-point')
 void callbackDispatcher() {
@@ -28,6 +31,11 @@ void callbackDispatcher() {
 
 void main() async{
   WidgetsFlutterBinding.ensureInitialized();  //inizializza binding
+
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
+  print("!!!!!!!!!!!!!!!!firebase inizializzato!!!!!!!!!!!!!!!!!!");
   
   Workmanager().initialize( //inizializzazione del workmanager per funzionare in background la posizione
     callbackDispatcher,
