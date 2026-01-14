@@ -1,3 +1,4 @@
+import 'package:cinegeek/UI/pages/LogInSignUp/auth_gate.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'services/weekend_context_manager.dart'; 
@@ -69,7 +70,7 @@ class CineGeekApp extends StatelessWidget {
       darkTheme: AppTheme.darkTheme,
       themeMode: ThemeMode.system,
 
-      home: const MainNavigation(),
+      home: const AuthGate(),
     );
   } 
 }

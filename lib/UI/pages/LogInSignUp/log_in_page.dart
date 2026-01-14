@@ -1,12 +1,32 @@
 import 'package:flutter/material.dart';
+import '../../../main.dart';
+import '../../../services/auth_service.dart';
 import '../../widgets/circle_button.dart';
 import '../../widgets/top_bar.dart';
 import '../../widgets/cineGlassButton.dart';
 import '../../widgets/cineGlassTextField.dart';
 
-class LoginPage extends StatelessWidget
+class LoginPage extends StatefulWidget
 {
   const LoginPage({super.key});
+
+  @override
+  State<LoginPage> createState() => _LoginPageState();
+}
+
+class _LoginPageState extends State<LoginPage>
+{
+  final AuthService authService = AuthService();
+  final TextEditingController emailController = TextEditingController();
+  final TextEditingController passwordController = TextEditingController();
+
+  @override
+  void dispose()
+  {
+    emailController.dispose();
+    passwordController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context)
@@ -14,7 +34,7 @@ class LoginPage extends StatelessWidget
     final textTheme = Theme.of(context).textTheme;
 
     return Scaffold
-    (
+      (
       body:
       Column
       (
@@ -24,13 +44,12 @@ class LoginPage extends StatelessWidget
           const TopBarLogo(),
 
           const SizedBox(height: 50),
+
           Expanded
           (
-            child:
-            Center
+            child: Center
             (
-              child:
-              Column
+              child: Column
               (
                 mainAxisSize: MainAxisSize.min,
                 children:
@@ -38,32 +57,77 @@ class LoginPage extends StatelessWidget
                   Text("Login", style: textTheme.headlineMedium),
                   const SizedBox(height: 32),
 
-                  const CineGlassTextField(hint: "Email"),
+                  CineGlassTextField
+                  (
+                    hint: "Email",
+                    controller: emailController,
+                  ),
+
                   const SizedBox(height: 16),
 
-                  const CineGlassTextField(hint: "Password", obscure: true),
+                  CineGlassTextField
+                  (
+                    hint: "Password",
+                    obscure: true,
+                    controller: passwordController,
+                  ),
+
                   const SizedBox(height: 32),
 
-                  const CineGlassButton(label: "Accedi"),
+                  CineGlassButton
+                  (
+                    label: "Accedi",
+                    onTap: () async
+                    {
+                      final navigator = Navigator.of(context);
+                      final messenger = ScaffoldMessenger.of(context);
+                      try
+                      {
+                        await authService.logIn
+                        (
+                          email: emailController.text.trim(),
+                          password: passwordController.text.trim(),
+                        );
+
+                        navigator.pushAndRemoveUntil
+                          (
+                          MaterialPageRoute
+                            (
+                            builder: (context)=> const MainNavigation(),
+                          ),
+                              (Route<dynamic> route) => false,
+                        );
+                      }
+                      catch (e)
+                      {
+                        messenger.showSnackBar
+                        (
+                          const SnackBar
+                          (
+                            content: Text("Login fallito"),
+                          ),
+                        );
+                      }
+                    },
+                  ),
                 ],
               ),
             ),
           ),
-          Padding
-          (
-            padding: const EdgeInsets.only(left: 20, bottom: 20),
 
-            child:
-            CircleButton
-            (
+          Padding(
+            padding: const EdgeInsets.only(left: 20, bottom: 20),
+            child: CircleButton(
               icon: Icons.arrow_back,
-              onTap: () => Navigator.pop(context),
+              onTap: ()
+                {
+                  Navigator.pop(context);
+                }
             ),
           ),
         ],
       ),
     );
-
   }
 }
 

@@ -1,12 +1,65 @@
+import 'package:cinegeek/main.dart';
+import 'package:cinegeek/services/auth_service.dart';
 import 'package:flutter/material.dart';
 import '../../widgets/circle_button.dart';
 import '../../widgets/top_bar.dart';
 import '../../widgets/cineGlassButton.dart';
 import '../../widgets/cineGlassTextField.dart';
 
-class SignUpPage extends StatelessWidget
+class SignUpPage extends StatefulWidget
 {
   const SignUpPage({super.key});
+  @override
+  State<SignUpPage> createState() => _SignUpPageState();
+}
+
+class _SignUpPageState extends State<SignUpPage>
+{
+  final AuthService authService=AuthService();
+  final TextEditingController emailController= TextEditingController();
+  final TextEditingController passwordController=TextEditingController();
+  final TextEditingController confirmPasswordController=TextEditingController();
+
+  @override
+  void dispose ()
+  {
+    emailController.dispose();
+    passwordController.dispose();
+    confirmPasswordController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _signUp(BuildContext context) async
+  {
+    final navigator= Navigator.of(context);
+    final messenger=ScaffoldMessenger.of(context);
+    final email= emailController.text.trim();
+    final password=passwordController.text.trim();
+    final confirmPassword=confirmPasswordController.text.trim();
+
+    if(password!=confirmPassword)
+    {
+      messenger.showSnackBar(const SnackBar(content:Text("Le password non coincidono")));
+      return;
+    }
+
+    try
+    {
+      await authService.signUp(email: email, password: password);
+      navigator.pushAndRemoveUntil
+      (
+        MaterialPageRoute
+        (
+            builder: (context)=> const MainNavigation(),
+        ),
+          (Route<dynamic> route) => false,
+      );
+    }
+    catch(e)
+    {
+      messenger.showSnackBar(SnackBar(content: Text("Registrazione Fallita")));
+    }
+  }
 
   @override
   Widget build(BuildContext context)
@@ -38,16 +91,30 @@ class SignUpPage extends StatelessWidget
                   Text("Registrazione", style: textTheme.headlineMedium),
 
                   const SizedBox(height: 32),
-                  const CineGlassTextField(hint: "Email"),
+                  CineGlassTextField
+                  (
+                    hint: "Email",
+                    controller: emailController,
+                  ),
 
                   const SizedBox(height: 16),
-                  const CineGlassTextField(hint: "Password", obscure: true),
+                  CineGlassTextField
+                  (
+                    hint: "Password",
+                    obscure: true,
+                    controller: passwordController,
+                  ),
 
                   const SizedBox(height: 16),
-                  const CineGlassTextField(hint: "Conferma password", obscure: true),
+                  CineGlassTextField
+                  (
+                    hint: "Conferma password",
+                    obscure: true,
+                    controller: confirmPasswordController,
+                  ),
 
                   const SizedBox(height: 32),
-                  const CineGlassButton(label: "Crea account"),
+                  CineGlassButton(label: "Crea account", onTap:() {_signUp(context);}),
                 ],
               ),
             ),
