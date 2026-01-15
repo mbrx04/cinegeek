@@ -16,9 +16,11 @@ class SignUpPage extends StatefulWidget
 class _SignUpPageState extends State<SignUpPage>
 {
   final AuthService authService=AuthService();
+
   final TextEditingController emailController= TextEditingController();
   final TextEditingController passwordController=TextEditingController();
   final TextEditingController confirmPasswordController=TextEditingController();
+  final TextEditingController usernameController=TextEditingController();
 
   @override
   void dispose ()
@@ -36,7 +38,13 @@ class _SignUpPageState extends State<SignUpPage>
     final email= emailController.text.trim();
     final password=passwordController.text.trim();
     final confirmPassword=confirmPasswordController.text.trim();
+    final username= usernameController.text.trim();
 
+    if (username.isEmpty || email.isEmpty || password.isEmpty)
+    {
+      messenger.showSnackBar(const SnackBar(content: Text("Tutti i campi sono obbligatori")));
+      return;
+    }
     if(password!=confirmPassword)
     {
       messenger.showSnackBar(const SnackBar(content:Text("Le password non coincidono")));
@@ -45,7 +53,14 @@ class _SignUpPageState extends State<SignUpPage>
 
     try
     {
-      await authService.signUp(email: email, password: password);
+      bool isUnique = await authService.isUsernameUnique(username);
+
+      if (!isUnique)
+      {
+        messenger.showSnackBar(const SnackBar(content: Text("Username già occupato, scegline un altro")));
+        return;
+      }
+      await authService.signUp(email: email, password: password,username: username);
       navigator.pushAndRemoveUntil
       (
         MaterialPageRoute
@@ -90,6 +105,12 @@ class _SignUpPageState extends State<SignUpPage>
                 [
                   Text("Registrazione", style: textTheme.headlineMedium),
 
+                  const SizedBox(height: 32),
+                  CineGlassTextField
+                    (
+                    hint: "Username",
+                    controller: usernameController,
+                  ),
                   const SizedBox(height: 32),
                   CineGlassTextField
                   (

@@ -81,22 +81,35 @@ class _LoginPageState extends State<LoginPage>
                     {
                       final navigator = Navigator.of(context);
                       final messenger = ScaffoldMessenger.of(context);
-                      try
-                      {
-                        await authService.logIn
-                        (
-                          email: emailController.text.trim(),
-                          password: passwordController.text.trim(),
-                        );
+                      final email=emailController.text.trim();
+                      final password= passwordController.text.trim();
 
-                        navigator.pushAndRemoveUntil
-                          (
-                          MaterialPageRoute
-                            (
-                            builder: (context)=> const MainNavigation(),
-                          ),
-                              (Route<dynamic> route) => false,
+                      if (email.isEmpty || password.isEmpty)
+                      {
+                        messenger.showSnackBar
+                        (
+                          const SnackBar(content: Text("Inserisci email e password")),
                         );
+                        return;
+                      }
+                      try {
+                        final user = await authService.logIn(email: email, password: password,);
+
+                        if (user != null)
+                        {
+                          navigator.pushAndRemoveUntil
+                            (
+                            MaterialPageRoute
+                              (
+                              builder: (context) => const MainNavigation(),
+                            ),
+                                (Route<dynamic> route) => false,
+                          );
+                        }
+                        else
+                        {
+                          messenger.showSnackBar(const SnackBar(content: Text("Credenziali non valide")),);
+                        }
                       }
                       catch (e)
                       {
