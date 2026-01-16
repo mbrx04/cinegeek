@@ -35,7 +35,6 @@ class ReviewsPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Theme.of(context).colorScheme.surface,
       
       //tasto per scrivere recensioni
       floatingActionButton: Padding(

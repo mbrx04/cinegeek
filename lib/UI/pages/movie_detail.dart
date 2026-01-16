@@ -29,7 +29,6 @@ class MovieDetailPage extends StatelessWidget {
     double imageWidth = isPopup ? 200 : 250;
     double imageHeight = isPopup ? 300 : 350;
     return Scaffold(
-      backgroundColor: Theme.of(context).colorScheme.surface, //sfondo material da mettere in tutte le pagine
       body: Stack(
         children: [
           //contenuto vero e proprio

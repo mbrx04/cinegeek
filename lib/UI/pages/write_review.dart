@@ -90,7 +90,7 @@ class _WriteReviewPageState extends State<WriteReviewPage> {
         : Colors.white.withAlpha(240);
 
     return Scaffold(
-      backgroundColor: Theme.of(context).colorScheme.surface,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: Stack(
         children: [
           SingleChildScrollView(

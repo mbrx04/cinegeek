@@ -55,7 +55,7 @@ class _SearchResultsPageState extends State<SearchResultsPage> {
     }
 
     return Container(
-      color: Theme.of(context).colorScheme.surface,
+      color: Theme.of(context).scaffoldBackgroundColor,
       //padding per non finire sotto la nav bar
       padding: const EdgeInsets.fromLTRB(16, 50, 16, 0), 
       width: double.infinity,

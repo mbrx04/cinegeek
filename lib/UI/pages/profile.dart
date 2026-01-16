@@ -1,9 +1,10 @@
+import 'package:cinegeek/UI/widgets/top_bar.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../../model/app_user.dart';
 import '../../services/auth_service.dart';
 import '../widgets/top_bar.dart';
-import 'movie_grid_page.dart';
+import 'movie_grid_page.dart'; 
 import 'LogInSignUp/auth_landing_page.dart';
 
 class Profile extends StatefulWidget {
@@ -24,7 +25,6 @@ class _ProfileState extends State<Profile> {
     _loadUserData();
   }
 
-  //per caricare i dati dell'utente direttament da firebase
   Future<void> _loadUserData() async {
     final user = await _authService.getCurrentUser();
     if (mounted) {
@@ -35,11 +35,9 @@ class _ProfileState extends State<Profile> {
     }
   }
 
-  //funzione logout
   Future<void> _handleLogout() async {
     await _authService.logOut();
     if (mounted) {
-      //toglie l'utente e fa alla schermata di login
       Navigator.of(context).pushAndRemoveUntil(
         MaterialPageRoute(builder: (context) => const AuthLandingPage()),
         (route) => false,
@@ -49,9 +47,13 @@ class _ProfileState extends State<Profile> {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
+
     if (_isLoading) {
       return const Scaffold(body: Center(child: CircularProgressIndicator()));
     }
+
     if (_currentUser == null) {
       return const Scaffold(body: Center(child: Text("Utente non trovato")));
     }
@@ -66,28 +68,30 @@ class _ProfileState extends State<Profile> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  CircleAvatar( //avatar di default a prescindere perchè a pagamento su firebase
+                  //avatar
+                  CircleAvatar(
                     radius: 55,
-                    backgroundColor: Colors.grey.shade800,
+                    backgroundColor: Colors.grey.shade400,
                     backgroundImage: _currentUser!.propicURL.isNotEmpty
                         ? NetworkImage(_currentUser!.propicURL) as ImageProvider
-                        : const AssetImage('assets/images/default_avatar.png'),
+                        : null,
                     child: _currentUser!.propicURL.isEmpty 
                         ? const Icon(Icons.person, size: 50, color: Colors.white) 
                         : null,
                   ),
                   const SizedBox(height: 16),
 
-                  //username che prende da firebase
+                  //username
                   Text(
                     _currentUser!.username,
-                    style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                    style: textTheme.headlineSmall?.copyWith(
                           fontWeight: FontWeight.bold,
+                          color: colorScheme.onSurface,
                         ),
                   ),
                   Text(
                     _currentUser!.email,
-                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    style: textTheme.bodyMedium?.copyWith(
                           color: Colors.grey,
                         ),
                   ),
@@ -105,7 +109,7 @@ class _ProfileState extends State<Profile> {
                     },
                   ),
 
-                  //watchlist collegata a firebase
+                  //watchlist
                   _ProfileMenuItem(
                     title: 'Watchlist',
                     icon: Icons.bookmark_border,
@@ -114,7 +118,7 @@ class _ProfileState extends State<Profile> {
                         context,
                         MaterialPageRoute(
                           builder: (_) => MovieGridPage(
-                            userId: _currentUser!.uid,  //si passa uid e non direttamente l'username
+                            userId: _currentUser!.uid,
                             title: 'Watchlist',
                             type: MovieCollectionType.watchlist,
                           ),
@@ -123,7 +127,7 @@ class _ProfileState extends State<Profile> {
                     },
                   ),
 
-                  //liked collegata a firebase
+                  //liked
                   _ProfileMenuItem(
                     title: 'Film Piaciuti',
                     icon: Icons.favorite_border,
@@ -175,6 +179,21 @@ class _ProfileMenuItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    //vede se tema chiaro o scuro
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    final Color contentColor = isDestructive 
+        ? Colors.red 
+        : (isDark ? Colors.white : Colors.black87);
+
+    final Color boxColor = isDark 
+        ? Colors.white.withOpacity(0.05) 
+        : Colors.black.withOpacity(0.05);
+
+    final Color borderColor = isDark 
+        ? Colors.white.withOpacity(0.1) 
+        : Colors.black.withOpacity(0.1);
+
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8.0),
       child: InkWell(
@@ -183,25 +202,29 @@ class _ProfileMenuItem extends StatelessWidget {
         child: Container(
           padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 16),
           decoration: BoxDecoration(
-            color: Colors.white.withOpacity(0.05),
+            color: boxColor,
             borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: Colors.white.withOpacity(0.1)),
+            border: Border.all(color: borderColor),
           ),
           child: Row(
             children: [
-              Icon(icon, color: isDestructive ? Colors.red : Colors.white),
+              Icon(icon, color: contentColor),
               const SizedBox(width: 16),
               Expanded(
                 child: Text(
                   title,
                   style: TextStyle(
                     fontSize: 16,
-                    color: isDestructive ? Colors.red : Colors.white,
+                    color: contentColor,
                     fontWeight: FontWeight.w500,
                   ),
                 ),
               ),
-              Icon(Icons.arrow_forward_ios, size: 16, color: Colors.white.withOpacity(0.5)),
+              Icon(
+                Icons.arrow_forward_ios, 
+                size: 16, 
+                color: contentColor.withOpacity(0.5)
+              ),
             ],
           ),
         ),

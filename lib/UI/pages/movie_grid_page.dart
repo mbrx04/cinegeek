@@ -43,6 +43,7 @@ class _MovieGridPageState extends State<MovieGridPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      
       appBar: AppBar(
         title: Text(widget.title, style: const TextStyle(fontWeight: FontWeight.bold)),
         centerTitle: true,
@@ -83,12 +84,15 @@ class _MovieGridPageState extends State<MovieGridPage> {
                       ? Icons.bookmark_border 
                       : Icons.favorite_border,
                     size: 80,
-                    color: Colors.white.withOpacity(0.3),
+                    color: Theme.of(context).iconTheme.color?.withOpacity(0.3),
                   ),
                   const SizedBox(height: 16),
                   Text(
                     "Nessun film in ${widget.title}",
-                    style: TextStyle(color: Colors.white.withOpacity(0.5), fontSize: 18),
+                    style: TextStyle(
+                      color: Theme.of(context).textTheme.bodyMedium?.color?.withOpacity(0.5), 
+                      fontSize: 18
+                    ),
                   ),
                 ],
               ),

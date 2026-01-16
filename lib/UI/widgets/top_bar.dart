@@ -8,7 +8,7 @@ class TopBarLogo extends StatelessWidget {
 
   const TopBarLogo({
     super.key,
-    this.height = 20, //cambiare dimensione del logo
+    this.height = 25, //cambiare dimensione del logo
     this.showShadow = false,  //ombra di default in questo caso disattivata
   });
 

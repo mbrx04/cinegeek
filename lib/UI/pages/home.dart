@@ -6,6 +6,7 @@ import '../widgets/top_bar.dart';
 import '../widgets/movie_carousel.dart';
 import '../widgets/cineGlassButton.dart';
 import 'LogInSignUp/auth_landing_page.dart';
+import '../theme.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -81,8 +82,12 @@ class _HomePageState extends State<HomePage> {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return SizedBox(
             height: 300,
-            child: const Center(child: CircularProgressIndicator(color: Color.fromARGB(255, 204, 255, 0))),
-          );
+            child: Center( 
+              child: CircularProgressIndicator(
+                // Theme.of(context) non è costante, quindi il genitore non può essere const
+                color: Theme.of(context).iconTheme.color, 
+              ),
+            ),          );
         } 
         //controlla se c'è errore
         else if (snapshot.hasError) {
