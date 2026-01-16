@@ -6,7 +6,7 @@ import '../model/movie.dart';
 class TmdbService {
   final String _baseUrl = 'https://api.themoviedb.org/3';
 
-  //meodo rpivato che fa la chiamata vera e propria e restituisce la lista
+  //metodo privato che fa la chiamata vera e propria e restituisce la lista
   Future<List<Movie>> _getMovies(String endpoint) async {
     final url = Uri.parse('$_baseUrl$endpoint');
     
@@ -57,5 +57,15 @@ class TmdbService {
   Future<List<Movie>> searchMovies(String query) async {
     if (query.isEmpty) return [];
     return _getMovies('/search/movie?query=$query');
+  }
+
+  // per i film da guardare
+  Future<List<Movie>> getWatchlist(String username) async {
+    return getWatchedMoviesPlaceholder();
+  }
+
+  // per i film piaciuti
+  Future<List<Movie>> getLikedMovies(String username) async {
+    return getPopularMovies();
   }
 }
