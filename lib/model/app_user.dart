@@ -16,10 +16,10 @@ class AppUser
 
   factory AppUser.fromFirestore(Map<String, dynamic> data) {
     return AppUser(
-      uid: data['uid'] ,
-      email: data['email'] ,
-      username: data['username'] ,
-      propicURL: data['propicURL'] = '',
+      uid: data['uid'] ?? '',
+      email: data['email'] ?? '',
+      username: data['username']  ?? '',
+      propicURL: data['propicURL'] ?? '',
     );
   }
 

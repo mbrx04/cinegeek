@@ -128,16 +128,16 @@ class _LoginPageState extends State<LoginPage>
             ),
           ),
 
-          Padding(
-            padding: const EdgeInsets.only(left: 20, bottom: 20),
-            child: CircleButton(
-              icon: Icons.arrow_back,
-              onTap: ()
-                {
-                  Navigator.pop(context);
-                }
-            ),
-          ),
+          //Padding(
+          //  padding: const EdgeInsets.only(left: 20, bottom: 20),
+          //  child: CircleButton(
+          //    icon: Icons.arrow_back,
+          //    onTap: ()
+          //      {
+          //        Navigator.pop(context);
+          //      }
+          //  ),
+          //),
         ],
       ),
     );

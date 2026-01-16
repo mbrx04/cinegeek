@@ -31,48 +31,60 @@ class _SignUpPageState extends State<SignUpPage>
     super.dispose();
   }
 
-  Future<void> _signUp(BuildContext context) async
-  {
-    final navigator= Navigator.of(context);
-    final messenger=ScaffoldMessenger.of(context);
-    final email= emailController.text.trim();
-    final password=passwordController.text.trim();
-    final confirmPassword=confirmPasswordController.text.trim();
-    final username= usernameController.text.trim();
+  // DENTRO sign_up_page.dart
 
-    if (username.isEmpty || email.isEmpty || password.isEmpty)
-    {
+  Future<void> _signUp(BuildContext context) async {
+    final navigator = Navigator.of(context);
+    final messenger = ScaffoldMessenger.of(context);
+    final email = emailController.text.trim();
+    final password = passwordController.text.trim();
+    final confirmPassword = confirmPasswordController.text.trim();
+    final username = usernameController.text.trim();
+
+    if (username.isEmpty || email.isEmpty || password.isEmpty) {
       messenger.showSnackBar(const SnackBar(content: Text("Tutti i campi sono obbligatori")));
       return;
     }
-    if(password!=confirmPassword)
-    {
-      messenger.showSnackBar(const SnackBar(content:Text("Le password non coincidono")));
+    if (password != confirmPassword) {
+      messenger.showSnackBar(const SnackBar(content: Text("Le password non coincidono")));
       return;
     }
 
-    try
-    {
+    try {
+      // 1. Controllo username unico
       bool isUnique = await authService.isUsernameUnique(username);
-
-      if (!isUnique)
-      {
+      if (!isUnique) {
         messenger.showSnackBar(const SnackBar(content: Text("Username già occupato, scegline un altro")));
         return;
       }
-      await authService.signUp(email: email, password: password,username: username);
-      navigator.pushAndRemoveUntil
-      (
-        MaterialPageRoute
-        (
-            builder: (context)=> const MainNavigation(),
-        ),
-          (Route<dynamic> route) => false,
+
+      // 2. Prova a registrare
+      // IMPORTANTE: Salviamo il risultato in una variabile 'result'
+      final result = await authService.signUp(
+          email: email, 
+          password: password, 
+          username: username
       );
-    }
-    catch(e)
-    {
-      messenger.showSnackBar(SnackBar(content: Text("Registrazione Fallita")));
+
+      // 3. SE result è null, vuol dire che c'è stato un errore nel Service (es. permessi DB)
+      if (result == null) {
+        messenger.showSnackBar(const SnackBar(content: Text("Errore salvataggio dati. Controlla connessione o regole Firebase.")));
+        return; // FERMATI QUI! Non navigare.
+      }
+
+      // 4. Se siamo qui, è andato tutto bene.
+      // Non serve fare pushAndRemoveUntil perché c'è l'AuthGate che ascolta!
+      // Ma se vuoi essere sicuro, puoi lasciare il pop per tornare indietro
+      if (mounted) {
+         // Chiudiamo la tastiera
+         FocusScope.of(context).unfocus(); 
+         // AuthGate nel main.dart vedrà il login e cambierà pagina da solo.
+         // Possiamo solo fare un pop per chiudere la pagina di registrazione.
+         navigator.pop(); 
+      }
+
+    } catch (e) {
+      messenger.showSnackBar(SnackBar(content: Text("Eccezione: $e")));
     }
   }
 
@@ -141,16 +153,16 @@ class _SignUpPageState extends State<SignUpPage>
             ),
           ),
 
-          Padding
-          (
-            padding: const EdgeInsets.only(left: 20, bottom: 20),
-            child:
-            CircleButton
-            (
-              icon: Icons.arrow_back,
-              onTap: () => Navigator.pop(context),
-            ),
-          ),
+          //Padding
+          //(
+          //  padding: const EdgeInsets.only(left: 20, bottom: 20),
+          //  child:
+          //  CircleButton
+          //  (
+          //    icon: Icons.arrow_back,
+          //    onTap: () => Navigator.pop(context),
+          //  ),
+          //),
         ],
       ),
     );

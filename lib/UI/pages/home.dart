@@ -49,7 +49,7 @@ class _HomePageState extends State<HomePage> {
 
           Expanded(
             child: SingleChildScrollView(
-              padding: const EdgeInsets.only(bottom: 120),
+              padding: const EdgeInsets.only(bottom: 100),
               child: Column(
                 children: [
                   
@@ -63,21 +63,6 @@ class _HomePageState extends State<HomePage> {
                   _buildCarouselSection("Più votati", _topRatedMovies, "hero_top"),
 
                   const SizedBox(height: 24),
-
-                  //  prova logIn DA CANCELLARE IN SEGUITO
-                  CineGlassButton(
-                    label: "Login / Registrazione",
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) => const AuthLandingPage(),
-                        ),
-                      );
-                    },
-                  ),
-                  const SizedBox(height: 24), // padding finale
-                  // FINE PROVA
                 ],
               ),
             ),
