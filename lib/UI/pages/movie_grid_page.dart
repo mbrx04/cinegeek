@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../../model/movie.dart';
+import '../pages/movie_detail.dart';
 
 enum MovieCollectionType {
   watchlist,
@@ -124,26 +125,43 @@ class _MovieGridPageState extends State<MovieGridPage> {
                 releaseDate: data['releaseDate'] ?? '',
               );
 
+              final String heroTag = 'grid_list_${movie.id}'; //per fare l'animazione all'apertura
+
               return GestureDetector(
                 onTap: () {
-                   print("Hai cliccato su: ${movie.title}");
+                   Navigator.push(
+                    context, 
+                    MaterialPageRoute(
+                      builder: (_) => MovieDetailPage(
+                        movieId: movie.id,
+                        title: movie.title,
+                        imageUrl: movie.fullPosterUrl,
+                        description: movie.overview,
+                        voteAverage: movie.voteAverage,
+                        heroTag: heroTag,
+                      )
+                    )
+                  );
                 },
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(12),
-                  child: movie.fullPosterUrl.isNotEmpty
-                      ? Image.network(
-                          movie.fullPosterUrl,
-                          fit: BoxFit.cover,
-                          errorBuilder: (context, error, stackTrace) => 
-                              Container(
-                                color: Colors.grey[800], 
-                                child: const Icon(Icons.broken_image, color: Colors.white54)
-                              ),
-                        )
-                      : Container(
-                          color: Colors.grey[800], 
-                          child: const Icon(Icons.movie, color: Colors.white54)
-                        ),
+                child: Hero(
+                  tag: heroTag,
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(12),
+                    child: movie.fullPosterUrl.isNotEmpty
+                        ? Image.network(
+                            movie.fullPosterUrl,
+                            fit: BoxFit.cover,
+                            errorBuilder: (context, error, stackTrace) => 
+                                Container(
+                                  color: Colors.grey[800], 
+                                  child: const Icon(Icons.broken_image, color: Colors.white54)
+                                ),
+                          )
+                        : Container(
+                            color: Colors.grey[800], 
+                            child: const Icon(Icons.movie, color: Colors.white54)
+                          ),
+                  ),
                 ),
               );
             },

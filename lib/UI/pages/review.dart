@@ -91,6 +91,7 @@ class ReviewsPage extends StatelessWidget {
                       context,
                       MaterialPageRoute(
                         builder: (_) => MovieDetailPage(
+                          movieId: 0, //id finto perchè ancora non sono vere le recensioni in quanto ancor non sono su db
                           title: review['title'],
                           imageUrl: review['poster'],
                           description: review['text'], 

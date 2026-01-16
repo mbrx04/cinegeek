@@ -118,6 +118,7 @@ class _SearchResultsPageState extends State<SearchResultsPage> {
                           context,
                           MaterialPageRoute(
                             builder: (_) => MovieDetailPage(
+                              movieId: movie.id,
                               title: movie.title,
                               imageUrl: movie.fullPosterUrl,
                               description: movie.overview,
