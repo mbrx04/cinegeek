@@ -1,7 +1,8 @@
 import 'package:cinegeek/UI/pages/write_review.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import '../../services/firestore_service.dart'; 
+import '../../services/firestore_service.dart';
+import '../../model/movie.dart';
 import '../widgets/circle_button.dart';
 import '../widgets/star_rating.dart';
 import '../widgets/rating.dart';
@@ -257,8 +258,21 @@ class _MovieDetailPageState extends State<MovieDetailPage> {
                                 icon: Icons.edit,
                                 label: "Recensisci",
                                 isActive: false,
-                                onTap: () {
-                                  Navigator.push(context, MaterialPageRoute(builder: (_) => const WriteReviewPage()));
+                                onTap: () { //serve per mettere il titolo del film gia nel campo di ricerca delle recensioni
+                                  final movieToSend = Movie(
+                                    id: widget.movieId,
+                                    title: widget.title,
+                                    posterPath: widget.imageUrl,
+                                    overview: widget.description,
+                                    voteAverage: widget.voteAverage,
+                                    releaseDate: '',
+                                  );
+                                  Navigator.push(
+                                    context, 
+                                    MaterialPageRoute(
+                                      builder: (_) => WriteReviewPage(initialMovie: movieToSend) // <--- PASSIAMO IL FILM
+                                    )
+                                  );
                                 },
                               ),
                           ],

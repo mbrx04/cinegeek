@@ -7,9 +7,15 @@ import '../../model/movie.dart';
 import '../../services/tmdb_service.dart';
 import '../widgets/star_rating.dart';
 import '../widgets/circle_button.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class WriteReviewPage extends StatefulWidget {
-  const WriteReviewPage({super.key});
+  final Movie? initialMovie;
+
+  const WriteReviewPage({
+    super.key,
+    this.initialMovie,
+    });
 
   @override
   State<WriteReviewPage> createState() => _WriteReviewPageState();
@@ -17,8 +23,10 @@ class WriteReviewPage extends StatefulWidget {
 
 class _WriteReviewPageState extends State<WriteReviewPage> {
   final TmdbService _tmdbService = TmdbService();
+  final FirestoreService _firestoreService = FirestoreService();
   Timer? _debounce;
 
+  //variabili di stato
   Movie? _selectedMovie;
   String? _selectedMovieTitle;
   String? _selectedMovieImage;
@@ -29,8 +37,22 @@ class _WriteReviewPageState extends State<WriteReviewPage> {
 
   List<Movie> _searchResults = [];
   bool _isSearchingMovie = false;
+  bool _isPublishing = false; //evita doppi invii di una singola recensione
 
-  //ricerca
+  @override
+  void initState() {
+    super.initState();
+    
+    if (widget.initialMovie != null) {  //se inizialmente c'è un film viene caricato subito come campo di ricerca senza scrivere il titolo
+      _selectedMovie = widget.initialMovie;
+      _selectedMovieTitle = widget.initialMovie!.title;
+      _selectedMovieImage = widget.initialMovie!.fullPosterUrl;
+      _movieSearchController.text = widget.initialMovie!.title;
+      _isSearchingMovie = false; 
+    }
+  }
+
+  //ricerca del film
   void _onSearchChanged(String query) {
     if (_debounce?.isActive ?? false) _debounce!.cancel();
 
@@ -54,8 +76,10 @@ class _WriteReviewPageState extends State<WriteReviewPage> {
     });
   }
 
+  //selezione film
   void _selectMovie(Movie movie) {
     setState(() {
+      _selectedMovie = movie;
       _selectedMovieTitle = movie.title;
       _selectedMovieImage = movie.fullPosterUrl;
       _isSearchingMovie = false;
@@ -74,6 +98,7 @@ class _WriteReviewPageState extends State<WriteReviewPage> {
     super.dispose();
   }
 
+  //salva recensione
   Future<void> _saveReview() async {
     final user = FirebaseAuth.instance.currentUser;
     if (user == null){
@@ -97,30 +122,38 @@ class _WriteReviewPageState extends State<WriteReviewPage> {
       return;
     }
 
-    final review = Review(
-      userId: user.uid,
-      username: user.displayName ?? 'Anonimo',
-      text: _reviewController.text.trim(),
-      rating: _currentRating,
-      createdAt: DateTime.now(),
-    );
-
     try {
-      await FirestoreService().addReview(
+    
+      final review = Review(
+        userId: user.uid,
+        username: user.displayName ?? 'CineGeek User', // O prendi da Firestore se hai username custom
+        userPropic: '', // Qui potrai mettere l'URL della propic
         movieId: _selectedMovie!.id.toString(),
-        review: review,
+        movieTitle: _selectedMovieTitle!,         // NECESSARIO PER FEED
+        moviePosterUrl: _selectedMovieImage!,     // NECESSARIO PER FEED
+        text: _reviewController.text.trim(),
+        rating: _currentRating,
+        createdAt: DateTime.now(),
       );
+
+    await _firestoreService.addReview(review);
+
+    if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Recensione pubblicata con successo!")),
+        );
+        Navigator.pop(context);
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Errore: $e")));
+        setState(() => _isPublishing = false);
+      }
+    }
 
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text("Recensione pubblicata con successo!")),
       );
-
-      Navigator.pop(context);
-    } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Errore nel salvataggio")),
-      );
-    }
   }
 
   @override
