@@ -1,4 +1,5 @@
 //serve per gestire tutte le comunicazioni con firestore
+import 'package:cinegeek/model/review.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 class FirestoreService {
@@ -78,5 +79,32 @@ class FirestoreService {
         .collection(collection)
         .doc(movieId.toString())
         .delete();
+  }
+
+  // aggiunge una recensione
+  Future<void> addReview({
+    required String movieId,
+    required Review review,
+  }) async {
+    await _db
+        .collection('movies')
+        .doc(movieId.toString())
+        .collection('reviews')
+        .add(review.toMap());
+  }
+
+
+  //restituisce uno stream di liste di recensioni
+  Stream<List<Review>> getReviews (String movieId) {
+    return _db
+        .collection('movies')
+        .doc(movieId)
+        .collection('reviews')
+        .orderBy('createdAt',descending: true)
+        .snapshots()
+        .map(
+        (snapshot) =>
+            snapshot.docs.map((doc) => Review.fromMap(doc.data())).toList(),
+        );
   }
 }

@@ -1,4 +1,7 @@
 import 'dart:async';  //SEMPRE PER EVITARE DI FARE CHIAMATE INUTILI ALL'API
+import 'package:cinegeek/model/review.dart';
+import 'package:cinegeek/services/firestore_service.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import '../../model/movie.dart';
 import '../../services/tmdb_service.dart';
@@ -15,8 +18,11 @@ class WriteReviewPage extends StatefulWidget {
 class _WriteReviewPageState extends State<WriteReviewPage> {
   final TmdbService _tmdbService = TmdbService();
   Timer? _debounce;
+
+  Movie? _selectedMovie;
   String? _selectedMovieTitle;
   String? _selectedMovieImage;
+
   double _currentRating = 3.0;
   final TextEditingController _reviewController = TextEditingController();
   final TextEditingController _movieSearchController = TextEditingController();
@@ -59,12 +65,62 @@ class _WriteReviewPageState extends State<WriteReviewPage> {
     FocusScope.of(context).unfocus();
   }
 
+
   @override
   void dispose() {
     _debounce?.cancel();
     _reviewController.dispose();
     _movieSearchController.dispose();
     super.dispose();
+  }
+
+  Future<void> _saveReview() async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null){
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Devi essere loggato per scrivere una recensione")),
+      );
+      return;
+    }
+
+    if (_selectedMovie == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Seleziona un film")),
+      );
+      return;
+    }
+
+    if (_reviewController.text.trim().isEmpty){
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Scrivi una recensione")),
+      );
+      return;
+    }
+
+    final review = Review(
+      userId: user.uid,
+      username: user.displayName ?? 'Anonimo',
+      text: _reviewController.text.trim(),
+      rating: _currentRating,
+      createdAt: DateTime.now(),
+    );
+
+    try {
+      await FirestoreService().addReview(
+        movieId: _selectedMovie!.id.toString(),
+        review: review,
+      );
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Recensione pubblicata con successo!")),
+      );
+
+      Navigator.pop(context);
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Errore nel salvataggio")),
+      );
+    }
   }
 
   @override
@@ -80,7 +136,7 @@ class _WriteReviewPageState extends State<WriteReviewPage> {
         ? Colors.white.withAlpha(26) 
         : Colors.black.withAlpha(26);
 
-    //colori del testo semrpe per chiaro e scuro
+    //colori del testo sempre per chiaro e scuro
     final Color textColor = isDark ? Colors.white : Colors.black;
     final Color hintColor = isDark ? Colors.white70 : Colors.black54;
 
@@ -262,9 +318,8 @@ class _WriteReviewPageState extends State<WriteReviewPage> {
                   height: 55,
                   child: ElevatedButton(
                     onPressed: (_selectedMovieTitle != null && _reviewController.text.isNotEmpty)
-                        ? () {
-                            print("Pubblicata: $_selectedMovieTitle");
-                            Navigator.pop(context);
+                        ? () async {
+                            await _saveReview();
                           }
                         : null,
                     style: ElevatedButton.styleFrom(
