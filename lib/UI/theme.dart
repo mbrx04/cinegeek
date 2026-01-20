@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
+final ValueNotifier<ThemeMode> themeNotifier = ValueNotifier(ThemeMode.system);
 class AppTheme {
   static const Color primaryLime = Color.fromARGB(255, 204, 255, 0);  //COLORE PRINCIPALE!!!!
 

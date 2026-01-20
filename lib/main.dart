@@ -61,18 +61,25 @@ class CineGeekApp extends StatelessWidget {
   const CineGeekApp({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      title: 'CineGeek',
-
-      theme: AppTheme.lightTheme,
-      darkTheme: AppTheme.darkTheme,
-      themeMode: ThemeMode.system,
-
-      home: const AuthGate(),
+  Widget build(BuildContext context)
+  {
+    return ValueListenableBuilder<ThemeMode>
+    (
+      valueListenable: themeNotifier,
+      builder: (context, currentMode, _)
+      {
+        return MaterialApp
+        (
+          debugShowCheckedModeBanner: false,
+          title: 'CineGeek',
+          theme: AppTheme.lightTheme,
+          darkTheme: AppTheme.darkTheme,
+          themeMode: currentMode,
+          home: const AuthGate(),
+        );
+      },
     );
-  } 
+  }
 }
 
 //nav bar e navigazione principale

@@ -2,7 +2,7 @@ class AppUser
 {
   final String uid;
   final String email;
-  final String username;
+  String username;
   String propicURL;
 
   AppUser

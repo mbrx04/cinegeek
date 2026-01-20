@@ -1,3 +1,5 @@
+import 'package:cinegeek/UI/pages/friends_page.dart';
+import 'package:cinegeek/UI/pages/settings.dart';
 import 'package:cinegeek/UI/widgets/top_bar.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -98,14 +100,14 @@ class _ProfileState extends State<Profile> {
 
                   const SizedBox(height: 30),
 
-                  //impostazioni
-                  _ProfileMenuItem(
-                    title: 'Impostazioni',
-                    icon: Icons.settings,
-                    onTap: () {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text("Funzionalità in arrivo!")),
-                      );
+
+                  _ProfileMenuItem
+                    (
+                    title: 'Amici',
+                    icon: Icons.people_alt_outlined,
+                    onTap: ()
+                    {
+                      Navigator.push(context,MaterialPageRoute(builder: (_) => const FriendsPage()));
                     },
                   ),
 
@@ -145,15 +147,26 @@ class _ProfileState extends State<Profile> {
                     },
                   ),
 
+                  _ProfileMenuItem(
+                    title: 'Impostazioni',
+                    icon: Icons.settings,
+                    onTap: () async
+                    {
+                      await Navigator.push(context, MaterialPageRoute(builder: (_) => const SettingsPage()));
+                      _loadUserData();
+                    },
+                  ),
+
                   const Divider(height: 40, color: Colors.grey),
 
-                  //logout
                   _ProfileMenuItem(
-                    title: 'Logout',
+                    title: 'Disconnettiti',
                     icon: Icons.logout,
                     isDestructive: true,
                     onTap: _handleLogout,
                   ),
+
+                  const SizedBox(height: 180)
                 ],
               ),
             ),
@@ -187,12 +200,12 @@ class _ProfileMenuItem extends StatelessWidget {
         : (isDark ? Colors.white : Colors.black87);
 
     final Color boxColor = isDark 
-        ? Colors.white.withOpacity(0.05) 
-        : Colors.black.withOpacity(0.05);
+        ? Colors.white.withAlpha(13)
+        : Colors.black.withAlpha(13);
 
     final Color borderColor = isDark 
-        ? Colors.white.withOpacity(0.1) 
-        : Colors.black.withOpacity(0.1);
+        ? Colors.white.withAlpha(26)
+        : Colors.black.withAlpha(26);
 
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8.0),
@@ -223,7 +236,7 @@ class _ProfileMenuItem extends StatelessWidget {
               Icon(
                 Icons.arrow_forward_ios, 
                 size: 16, 
-                color: contentColor.withOpacity(0.5)
+                color: contentColor.withAlpha(128)
               ),
             ],
           ),
