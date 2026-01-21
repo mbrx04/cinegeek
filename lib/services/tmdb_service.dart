@@ -59,12 +59,12 @@ class TmdbService {
     return _getMovies('/search/movie?query=$query');
   }
 
-  // per i film da guardare
+  //per i film da guardare
   Future<List<Movie>> getWatchlist(String username) async {
     return getWatchedMoviesPlaceholder();
   }
 
-  // per i film piaciuti
+  //per i film piaciuti
   Future<List<Movie>> getLikedMovies(String username) async {
     return getPopularMovies();
   }

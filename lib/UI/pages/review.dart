@@ -1,43 +1,43 @@
+import 'package:cinegeek/services/auth_service.dart';
+import 'package:cinegeek/services/firestore_service.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import '../widgets/top_bar.dart';
 import '../widgets/review_card.dart';
 import '../widgets/circle_button.dart';
+import '../../model/review.dart' as model;
 import 'movie_detail.dart';
 import 'write_review.dart';
 
-class ReviewsPage extends StatelessWidget {
+class ReviewsPage extends StatefulWidget {
   const ReviewsPage({super.key});
 
-  final List<Map<String, dynamic>> _mockReviews = const [
-    {
-      "title": "Fast X",
-      "poster": "https://www.themoviedb.org/t/p/w200/hC6mLdlgpFU63FOduX80xaGevGj.jpg",
-      "user": "Fragola86",
-      "text": "Ottime premesse ma film brutto",
-      "rating": 3.0
-    },
-    {
-      "title": "Ferrari",
-      "poster": "https://www.themoviedb.org/t/p/w1280/xnquC6Cn5BRBMz68231gIjXlbhj.jpg",
-      "user": "Banana33",
-      "text": "Ottimo per me, Banana33",
-      "rating": 5.0
-    },
-    {
-      "title": "Le Mans '66 - La grande sfida",
-      "poster": "https://www.themoviedb.org/t/p/w1280/nKVOiiCukJsXNYPETbIWqZaBYd.jpg",
-      "user": "Boom3r61",
-      "text": "Non so che scrivere, vedi se si vede tutto il titolo dato che è lungvo",
-      "rating": 1.0
-    },
-  ];
+  @override
+  State<ReviewsPage> createState() => _ReviewsPageState();
+}
+
+class _ReviewsPageState extends State<ReviewsPage> {
+  final AuthService _authService = AuthService();
+  final FirestoreService _firestoreService = FirestoreService();
+
+  late Future<List<String>> _friendIdsFuture; //uid degli amici
+
+  @override
+  void initState() {
+    super.initState();
+    _friendIdsFuture = _loadFriendIds();
+  }
+
+  Future<List<String>> _loadFriendIds() async { //estrae solo uid degli amici
+    final friendsMap = await _authService.getFriends();
+    List<String> ids = friendsMap.map((f) => f['uid'] as String).toList();
+    return ids;
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      
-      //tasto per scrivere recensioni
-      floatingActionButton: Padding(
+      floatingActionButton: Padding(  //tasto scrivi recensioni
         padding: const EdgeInsets.only(bottom: 120, right: 10),
         child: CircleButton(
           size: 60,
@@ -53,9 +53,9 @@ class ReviewsPage extends StatelessWidget {
       
       body: Column(
         children: [
-          const TopBarLogo(),          
+          const TopBarLogo(),
           Padding(
-            padding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
             child: Align(
               alignment: Alignment.centerLeft,
               child: Text(
@@ -66,40 +66,76 @@ class ReviewsPage extends StatelessWidget {
           ),
           
           Expanded(
-            child: ListView.builder(
-              padding: const EdgeInsets.fromLTRB(16, 0, 16, 120),
-              itemCount: _mockReviews.length,
-              itemBuilder: (context, index) {
-                final review = _mockReviews[index];
+            //carica la lista degli amici
+            child: FutureBuilder<List<String>>(
+              future: _friendIdsFuture,
+              builder: (context, friendSnapshot) {
                 
-                // CREAZIONE TAG HERO UNIVOCO
-                final String tag = "review_${review['poster']}_$index"; 
+                //carica gli amici
+                if (friendSnapshot.connectionState == ConnectionState.waiting) {
+                  return const Center(child: CircularProgressIndicator());
+                }
 
-                return ReviewCard(
-                  movieTitle: review['title'],
-                  posterUrl: review['poster'],
-                  username: review['user'],
-                  reviewText: review['text'],
-                  rating: review['rating'],
-                  heroTag: tag, 
+                final friendIds = friendSnapshot.data ?? [];
 
-                  onTap: () {
-                    //CALLBACK DI NAVIGAZIONE
-                    //review_card è un widget senza logica, detto puro. qui definiamo noi cosa succede al
-                    //click. gli passiamo i dati della recensione alla pagina di dettaglio del film.
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) => MovieDetailPage(
-                          movieId: 0, //id finto perchè ancora non sono vere le recensioni in quanto ancor non sono su db
-                          title: review['title'],
-                          imageUrl: review['poster'],
-                          description: review['text'], 
-                          voteAverage: (review['rating'] as num).toDouble(),
+                if (friendIds.isEmpty) {
+                  return _buildEmptyState(context, "Non hai ancora amici (o tu)!\nAggiungili dal profilo per vedere qui le loro recensioni.");
+                }
+
+                //prendo le recensioni degli amici
+                return StreamBuilder<List<model.Review>>(
+                  stream: _firestoreService.getFriendsReviews(friendIds),
+                  builder: (context, reviewSnapshot) {
+                    
+                    if (reviewSnapshot.connectionState == ConnectionState.waiting) {
+                      return const Center(child: CircularProgressIndicator());
+                    }
+
+                    if (reviewSnapshot.hasError) {
+                      return Center(child: Text("Errore caricamento: ${reviewSnapshot.error}"));
+                    }
+
+                    final reviews = reviewSnapshot.data ?? [];
+
+                    if (reviews.isEmpty) {
+                      return _buildEmptyState(context, "I tuoi amici non hanno ancora scritto recensioni.\nSii il primo!");
+                    }
+
+                    //vera lista degli amici
+                    return ListView.builder(
+                      padding: const EdgeInsets.fromLTRB(16, 0, 16, 120),
+                      itemCount: reviews.length,
+                      itemBuilder: (context, index) {
+                        final review = reviews[index];
+                        final String tag = "review_${review.id}_$index"; 
+
+                        return ReviewCard(
+                          movieTitle: review.movieTitle,
+                          posterUrl: review.moviePosterUrl,
+                          username: review.username,
+                          reviewText: review.text,
+                          rating: review.rating,
                           heroTag: tag, 
-                          showStars: true,
-                        ),
-                      ),
+
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) => MovieDetailPage(
+                                  movieId: int.tryParse(review.movieId) ?? 0,
+                                  title: review.movieTitle,
+                                  imageUrl: review.moviePosterUrl,
+                                  description: review.text,
+                                  voteAverage: review.rating, 
+                                  heroTag: tag, 
+                                  showStars: true,
+                                  isPopup: true,
+                                ),
+                              ),
+                            );
+                          },
+                        );
+                      },
                     );
                   },
                 );
@@ -107,6 +143,26 @@ class ReviewsPage extends StatelessWidget {
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildEmptyState(BuildContext context, String message) {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(30.0),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.people_outline, size: 60, color: Colors.grey.withOpacity(0.5)),
+            const SizedBox(height: 20),
+            Text(
+              message,
+              textAlign: TextAlign.center,
+              style: TextStyle(color: Colors.grey.withOpacity(0.8), fontSize: 16),
+            ),
+          ],
+        ),
       ),
     );
   }

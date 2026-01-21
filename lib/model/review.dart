@@ -2,7 +2,6 @@ class Review {
   final String id;
   final String userId;
   final String username;
-  final String userPropic;
   final String movieId;
   final String movieTitle;
   final String moviePosterUrl;
@@ -14,7 +13,6 @@ class Review {
     this.id = '',
     required this.userId,
     required this.username,
-    this.userPropic = '',
     required this.movieId,
     required this.movieTitle,
     required this.moviePosterUrl,
@@ -27,7 +25,6 @@ class Review {
     return {
       'userId': userId,
       'username': username,
-      'userPropic': userPropic,
       'movieId': movieId,
       'movieTitle': movieTitle,
       'moviePosterUrl': moviePosterUrl,
@@ -43,7 +40,6 @@ class Review {
       id: documentId,
       userId: map['userId'] ?? '',
       username: map['username'] ?? 'Anonimo',
-      userPropic: map['userPropic'] ?? '',
       movieId: map['movieId'] ?? '',
       movieTitle: map['movieTitle'] ?? '',
       moviePosterUrl: map['moviePosterUrl'] ?? '',

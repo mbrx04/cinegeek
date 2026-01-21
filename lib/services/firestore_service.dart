@@ -81,22 +81,25 @@ class FirestoreService {
         .delete();
   }
 
-  // ... (Tutto il codice delle liste checkMovieInList/toggleMovieInList rimane uguale)
-
-  // --- GESTIONE RECENSIONI (MODIFICATA PER FEED E CAROSELLO) ---
-
-  // Aggiunge una recensione alla collezione GLOBALE
+  // Aggiunge una recensione
   Future<void> addReview(Review review) async {
-    // Salviamo in 'reviews' (globale) così possiamo fare query tipo:
-    // "Dammi tutte le recensioni di Marco" o "Dammi tutte le recensioni di questo film"
     await _db.collection('reviews').add(review.toMap());
   }
 
-  // Ottiene le recensioni di uno specifico film (per la pagina dettaglio)
   Stream<List<Review>> getReviewsForMovie(String movieId) {
     return _db
         .collection('reviews')
-        .where('movieId', isEqualTo: movieId) // Filtra per film
+        .where('movieId', isEqualTo: movieId)
+        .orderBy('createdAt', descending: true)
+        .snapshots()
+        .map((snapshot) => snapshot.docs
+            .map((doc) => Review.fromMap(doc.data(), doc.id))
+            .toList());
+  }
+  Stream<List<Review>> getReviewsByUser(String userId) {
+    return _db
+        .collection('reviews')
+        .where('userId', isEqualTo: userId)
         .orderBy('createdAt', descending: true)
         .snapshots()
         .map((snapshot) => snapshot.docs
@@ -104,11 +107,14 @@ class FirestoreService {
             .toList());
   }
 
-  // (OPZIONALE FUTURO) Ottiene le recensioni di un utente specifico (per il profilo amico)
-  Stream<List<Review>> getReviewsByUser(String userId) {
+  Stream<List<Review>> getFriendsReviews(List<String> friendIds) {  //mi da le recensioni dei miei amici
+    if (friendIds.isEmpty) {
+      return Stream.value([]); //se non ci sono amici restituisco stream vuoto
+    }
+    final limitedFriends = friendIds.take(10).toList(); //10 è il limite di firebase
     return _db
         .collection('reviews')
-        .where('userId', isEqualTo: userId)
+        .where('userId', whereIn: limitedFriends)
         .orderBy('createdAt', descending: true)
         .snapshots()
         .map((snapshot) => snapshot.docs

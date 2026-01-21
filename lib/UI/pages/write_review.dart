@@ -1,4 +1,5 @@
 import 'dart:async';  //SEMPRE PER EVITARE DI FARE CHIAMATE INUTILI ALL'API
+import 'package:cinegeek/model/app_user.dart';
 import 'package:cinegeek/model/review.dart';
 import 'package:cinegeek/services/firestore_service.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -8,6 +9,7 @@ import '../../services/tmdb_service.dart';
 import '../widgets/star_rating.dart';
 import '../widgets/circle_button.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import '../../services/auth_service.dart';
 
 class WriteReviewPage extends StatefulWidget {
   final Movie? initialMovie;
@@ -24,6 +26,7 @@ class WriteReviewPage extends StatefulWidget {
 class _WriteReviewPageState extends State<WriteReviewPage> {
   final TmdbService _tmdbService = TmdbService();
   final FirestoreService _firestoreService = FirestoreService();
+  final AuthService _authService = AuthService();
   Timer? _debounce;
 
   //variabili di stato
@@ -123,26 +126,35 @@ class _WriteReviewPageState extends State<WriteReviewPage> {
     }
 
     try {
+
+      setState(() {
+        _isPublishing = true;
+      });
     
+      String authorName = 'utente sconosciuto';
+      final appUser = await _authService.fetchUserData(user.uid);
+      if (appUser != null && appUser.username.isNotEmpty) {
+        authorName = appUser.username;
+      }
+
       final review = Review(
         userId: user.uid,
-        username: user.displayName ?? 'CineGeek User', // O prendi da Firestore se hai username custom
-        userPropic: '', // Qui potrai mettere l'URL della propic
+        username: authorName,
         movieId: _selectedMovie!.id.toString(),
-        movieTitle: _selectedMovieTitle!,         // NECESSARIO PER FEED
-        moviePosterUrl: _selectedMovieImage!,     // NECESSARIO PER FEED
+        movieTitle: _selectedMovieTitle!,
+        moviePosterUrl: _selectedMovieImage!,
         text: _reviewController.text.trim(),
         rating: _currentRating,
         createdAt: DateTime.now(),
       );
 
-    await _firestoreService.addReview(review);
+    await _firestoreService.addReview(review);  //salva sul db
 
     if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text("Recensione pubblicata con successo!")),
         );
-        Navigator.pop(context);
+        Navigator.pop(context); //dopo il messaggio di successo torna indietro
       }
     } catch (e) {
       if (mounted) {
@@ -150,10 +162,6 @@ class _WriteReviewPageState extends State<WriteReviewPage> {
         setState(() => _isPublishing = false);
       }
     }
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Recensione pubblicata con successo!")),
-      );
   }
 
   @override
