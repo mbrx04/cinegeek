@@ -74,12 +74,7 @@ class _ProfileState extends State<Profile> {
                   CircleAvatar(
                     radius: 55,
                     backgroundColor: Colors.grey.shade400,
-                    backgroundImage: _currentUser!.propicURL.isNotEmpty
-                        ? NetworkImage(_currentUser!.propicURL) as ImageProvider
-                        : null,
-                    child: _currentUser!.propicURL.isEmpty 
-                        ? const Icon(Icons.person, size: 50, color: Colors.white) 
-                        : null,
+                    child: const Icon(Icons.person, size: 60, color: Colors.white), 
                   ),
                   const SizedBox(height: 16),
 

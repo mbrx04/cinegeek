@@ -81,6 +81,7 @@ class FirestoreService {
         .delete();
   }
 
+  // Aggiunge una recensione
   Future<void> addReview(Review review) async {
     await _db.collection('reviews').add(review.toMap());
   }
@@ -88,14 +89,13 @@ class FirestoreService {
   Stream<List<Review>> getReviewsForMovie(String movieId) {
     return _db
         .collection('reviews')
-        .where('movieId', isEqualTo: movieId) // Filtra per film
+        .where('movieId', isEqualTo: movieId)
         .orderBy('createdAt', descending: true)
         .snapshots()
         .map((snapshot) => snapshot.docs
             .map((doc) => Review.fromMap(doc.data(), doc.id))
             .toList());
   }
-
   Stream<List<Review>> getReviewsByUser(String userId) {
     return _db
         .collection('reviews')
@@ -107,11 +107,18 @@ class FirestoreService {
             .toList());
   }
 
-  //ottiene tutte le recensioni
-  Stream<QuerySnapshot> getGlobalReviewsStream() {
+  Stream<List<Review>> getFriendsReviews(List<String> friendIds) {  //mi da le recensioni dei miei amici
+    if (friendIds.isEmpty) {
+      return Stream.value([]); //se non ci sono amici restituisco stream vuoto
+    }
+    final limitedFriends = friendIds.take(10).toList(); //10 è il limite di firebase
     return _db
-        .collection('reviews')  //in comune
-        .orderBy('createdAt', descending: true) //ordina dalla più recente
-        .snapshots(); //aggiorna in tempo reale
+        .collection('reviews')
+        .where('userId', whereIn: limitedFriends)
+        .orderBy('createdAt', descending: true)
+        .snapshots()
+        .map((snapshot) => snapshot.docs
+            .map((doc) => Review.fromMap(doc.data(), doc.id))
+            .toList());
   }
 }

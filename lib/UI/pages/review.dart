@@ -1,13 +1,13 @@
 import 'package:cinegeek/services/auth_service.dart';
 import 'package:cinegeek/services/firestore_service.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import '../widgets/top_bar.dart';
 import '../widgets/review_card.dart';
 import '../widgets/circle_button.dart';
+import '../../model/review.dart' as model;
 import 'movie_detail.dart';
 import 'write_review.dart';
-import 'review_detail_page.dart';
 
 class ReviewsPage extends StatefulWidget {
   const ReviewsPage({super.key});
@@ -17,47 +17,27 @@ class ReviewsPage extends StatefulWidget {
 }
 
 class _ReviewsPageState extends State<ReviewsPage> {
-  final FirestoreService _firestoreService = FirestoreService();
   final AuthService _authService = AuthService();
+  final FirestoreService _firestoreService = FirestoreService();
 
-  //lista uid amici
-  List<String> _friendIds = [];
-  bool _isLoadingFriends = true;
+  late Future<List<String>> _friendIdsFuture; //uid degli amici
 
   @override
   void initState() {
     super.initState();
-    _loadFriends();
+    _friendIdsFuture = _loadFriendIds();
   }
 
-  //carica lista amici
-  Future<void> _loadFriends() async {
-    try {
-      final friendsList = await _authService.getFriends();
-      
-      //estrae solo uid amici
-      final ids = friendsList.map((friend) => friend['uid'].toString()).toList();
-      
-      if (mounted) {
-        setState(() {
-          _friendIds = ids;
-          _isLoadingFriends = false;
-        });
-      }
-    } catch (e) {
-      print("Errore caricamento amici: $e");
-      if (mounted) {
-        setState(() => _isLoadingFriends = false);
-      }
-    }
+  Future<List<String>> _loadFriendIds() async { //estrae solo uid degli amici
+    final friendsMap = await _authService.getFriends();
+    List<String> ids = friendsMap.map((f) => f['uid'] as String).toList();
+    return ids;
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      
-      //scrivi recensioni tasto
-      floatingActionButton: Padding(
+      floatingActionButton: Padding(  //tasto scrivi recensioni
         padding: const EdgeInsets.only(bottom: 120, right: 10),
         child: CircleButton(
           size: 60,
@@ -73,100 +53,83 @@ class _ReviewsPageState extends State<ReviewsPage> {
       
       body: Column(
         children: [
-          const TopBarLogo(),          
+          const TopBarLogo(),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
             child: Align(
               alignment: Alignment.centerLeft,
               child: Text(
-                "Recensioni Amici", 
+                "Recensioni", 
                 style: Theme.of(context).textTheme.headlineMedium,
               ),
             ),
           ),
           
           Expanded(
-            child: _isLoadingFriends 
-              ? const Center(child: CircularProgressIndicator()) // Aspettiamo di sapere chi sono gli amici
-              : StreamBuilder<QuerySnapshot>(
-                  stream: _firestoreService.getGlobalReviewsStream(),
-                  builder: (context, snapshot) {
+            //carica la lista degli amici
+            child: FutureBuilder<List<String>>(
+              future: _friendIdsFuture,
+              builder: (context, friendSnapshot) {
+                
+                //carica gli amici
+                if (friendSnapshot.connectionState == ConnectionState.waiting) {
+                  return const Center(child: CircularProgressIndicator());
+                }
+
+                final friendIds = friendSnapshot.data ?? [];
+
+                if (friendIds.isEmpty) {
+                  return _buildEmptyState(context, "Non hai ancora amici (o tu)!\nAggiungili dal profilo per vedere qui le loro recensioni.");
+                }
+
+                //prendo le recensioni degli amici
+                return StreamBuilder<List<model.Review>>(
+                  stream: _firestoreService.getFriendsReviews(friendIds),
+                  builder: (context, reviewSnapshot) {
                     
-                    if (snapshot.connectionState == ConnectionState.waiting) {
-                      return const Center(
-                        child: CircularProgressIndicator(color: Color(0xFFCCFF00))
-                      );
+                    if (reviewSnapshot.connectionState == ConnectionState.waiting) {
+                      return const Center(child: CircularProgressIndicator());
                     }
 
-                    if (snapshot.hasError) {
-                      return const Center(child: Text("Errore nel caricamento recensioni"));
+                    if (reviewSnapshot.hasError) {
+                      return Center(child: Text("Errore caricamento: ${reviewSnapshot.error}"));
                     }
 
-                    if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-                      return const Center(
-                        child: Text("Nessuna recensione trovata.", style: TextStyle(color: Colors.grey)),
-                      );
+                    final reviews = reviewSnapshot.data ?? [];
+
+                    if (reviews.isEmpty) {
+                      return _buildEmptyState(context, "I tuoi amici non hanno ancora scritto recensioni.\nSii il primo!");
                     }
 
-                    //solo recensioni amici
-                    final allDocs = snapshot.data!.docs;
-                    
-                    final friendReviews = allDocs.where((doc) {
-                      final data = doc.data() as Map<String, dynamic>;
-                      final String authorId = data['userId'] ?? '';
-                      
-                      //lascio la recensione solo se è nella lista di amici
-                      return _friendIds.contains(authorId);
-                    }).toList();
-
-                    //per amici senza recensioni la pagina rimane vuota
-                    if (friendReviews.isEmpty) {
-                      return const Center(
-                        child: Text(
-                          "Nessun amico ha ancora scritto recensioni.\nAggiungi amici o aspetta che scrivano qualcosa!",
-                          textAlign: TextAlign.center,
-                          style: TextStyle(color: Colors.grey),
-                        ),
-                      );
-                    }
-
+                    //vera lista degli amici
                     return ListView.builder(
                       padding: const EdgeInsets.fromLTRB(16, 0, 16, 120),
-                      itemCount: friendReviews.length,
+                      itemCount: reviews.length,
                       itemBuilder: (context, index) {
-                        final data = friendReviews[index].data() as Map<String, dynamic>;
-                        
-                        final String title = data['movieTitle'] ?? 'Sconosciuto';
-                        final String poster = data['moviePosterUrl'] ?? '';
-                        // Fix per il nome utente vuoto:
-                        final String username = (data['username'] != null && data['username'].toString().isNotEmpty) 
-                            ? data['username'] 
-                            : 'Utente Sconosciuto';
-                            
-                        final String text = data['text'] ?? '';
-                        final double rating = (data['rating'] ?? 0).toDouble();
-                        final int movieId = int.tryParse(data['movieId'].toString()) ?? 0;
-
-                        final String tag = "review_${friendReviews[index].id}"; 
+                        final review = reviews[index];
+                        final String tag = "review_${review.id}_$index"; 
 
                         return ReviewCard(
-                          movieTitle: title,
-                          posterUrl: poster,
-                          username: username,
-                          reviewText: text,
-                          rating: rating,
+                          movieTitle: review.movieTitle,
+                          posterUrl: review.moviePosterUrl,
+                          username: review.username,
+                          reviewText: review.text,
+                          rating: review.rating,
                           heroTag: tag, 
+
                           onTap: () {
                             Navigator.push(
                               context,
                               MaterialPageRoute(
-                                builder: (_) => ReviewDetailPage(
-                                  movieTitle: title,
-                                  posterUrl: poster,
-                                  username: username,
-                                  reviewText: text, //testo della recensione
-                                  rating: rating, //voto della recensione
-                                  heroTag: tag,
+                                builder: (_) => MovieDetailPage(
+                                  movieId: int.tryParse(review.movieId) ?? 0,
+                                  title: review.movieTitle,
+                                  imageUrl: review.moviePosterUrl,
+                                  description: review.text,
+                                  voteAverage: review.rating, 
+                                  heroTag: tag, 
+                                  showStars: true,
+                                  isPopup: true,
                                 ),
                               ),
                             );
@@ -175,9 +138,31 @@ class _ReviewsPageState extends State<ReviewsPage> {
                       },
                     );
                   },
-                ),
+                );
+              },
+            ),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildEmptyState(BuildContext context, String message) {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(30.0),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.people_outline, size: 60, color: Colors.grey.withOpacity(0.5)),
+            const SizedBox(height: 20),
+            Text(
+              message,
+              textAlign: TextAlign.center,
+              style: TextStyle(color: Colors.grey.withOpacity(0.8), fontSize: 16),
+            ),
+          ],
+        ),
       ),
     );
   }

@@ -9,7 +9,7 @@ class AuthService
 
   final FirebaseFirestore _db = FirebaseFirestore.instance;
 
-  // Verifica se lo username esiste già (usato nel signup)
+  //verifica se lo username esiste già (usato nel signup)
   Future<bool> isUsernameUnique(String username) async
   {
     final query = await _db.collection('users').where('username', isEqualTo: username).get();
@@ -201,14 +201,12 @@ class AuthService
             .set({
           'uid': friend.uid,
           'username': friend.username,
-          'propicURL': friend.propicURL,
           'addedAt': Timestamp.now(),
         });
         await _db.collection('users').doc(friend.uid).collection('friends').doc(
             currentUser.uid).set({
           'uid': currentUser.uid,
           'username': currentUser.username,
-          'propicURL': currentUser.propicURL,
           'addedAt': Timestamp.now()
         });
       }

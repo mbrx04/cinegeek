@@ -84,7 +84,6 @@ class _HomePageState extends State<HomePage> {
             height: 300,
             child: Center( 
               child: CircularProgressIndicator(
-                // Theme.of(context) non è costante, quindi il genitore non può essere const
                 color: Theme.of(context).iconTheme.color, 
               ),
             ),          );

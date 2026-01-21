@@ -3,14 +3,12 @@ class AppUser
   final String uid;
   final String email;
   String username;
-  String propicURL;
 
   AppUser
   ({
     required this.uid,
     required this.email,
     required this.username,
-    this.propicURL=""
   });
 
 
@@ -19,7 +17,6 @@ class AppUser
       uid: data['uid'] ?? '',
       email: data['email'] ?? '',
       username: data['username']  ?? '',
-      propicURL: data['propicURL'] ?? '',
     );
   }
 
@@ -28,7 +25,6 @@ class AppUser
       'uid': uid,
       'email': email,
       'username': username,
-      'propicURL': propicURL,
     };
   }
 }
