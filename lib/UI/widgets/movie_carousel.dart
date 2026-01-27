@@ -107,12 +107,7 @@ class MovieCarousel extends StatelessWidget {
                       ),
                       const SizedBox(height: 5),
                       //titolo sotto la locandina nel carosello
-                      Text(
-                        movie.title,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: Theme.of(context).textTheme.labelMedium?.copyWith(fontWeight: FontWeight.bold),
-                      ),
+                      
                     ],
                   ),
                 ),

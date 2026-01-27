@@ -4,18 +4,17 @@ import 'package:firebase_auth/firebase_auth.dart';
 import '../../services/firestore_service.dart';
 import '../../model/movie.dart';
 import '../widgets/circle_button.dart';
-import '../widgets/star_rating.dart';
 import '../widgets/rating.dart';
+import '../widgets/movie_detail_action.dart';
+import '../widgets/movie_description.dart';
 
 class MovieDetailPage extends StatefulWidget {
-  final int movieId; //id univoco per db
+  final int movieId; //id univoco del film per il DB
   final String title;
   final String imageUrl;
   final String description;
   final double voteAverage;
   final String heroTag;
-  final bool isPopup;
-  final bool showStars;
 
   const MovieDetailPage({
     super.key,
@@ -25,8 +24,6 @@ class MovieDetailPage extends StatefulWidget {
     required this.description,
     required this.voteAverage,
     required this.heroTag,
-    this.isPopup = false,
-    this.showStars = false,
   });
 
   @override
@@ -34,33 +31,36 @@ class MovieDetailPage extends StatefulWidget {
 }
 
 class _MovieDetailPageState extends State<MovieDetailPage> {
-  final FirestoreService _firestoreService = FirestoreService();  //service instanziato per usare i suoi metodi
-    bool _isDescriptionExpanded = false;  //espansione della descrizione
+
+  //instanzazione del db
+  final FirestoreService _firestoreService = FirestoreService();
   
-  //3 stati del container per aggiungere alla watclist, like e watched
+  //3 stati dei bottoni
   bool _isInWatchlist = false; 
   bool _isWatched = false;     
   bool _isLiked = false;       
   
-  final String? _uid = FirebaseAuth.instance.currentUser?.uid;  //prendo l'id del'utente loggato per tutte le informazioni
+  final String? _uid = FirebaseAuth.instance.currentUser?.uid;  //uid dell'utente loggato per prendere i dati
 
   @override
-  void initState() {
+  void initState() {  //appena si apre la pagina controlla se l'utente ha a che fare con il film in question
     super.initState();
     _initData();
   }
 
-  void _initData() async {  //carica lo stato iniziale cioè se ho già messo like ecc...
+  //carica stato iniziale del db cioè se ho gia messo like, watched ec...
+  void _initData() async {
     if (_uid == null) return;
 
+    //3 chiamate in parallelo per essere più veloce
     final results = await Future.wait([
-      //con future.wait si fanno tutte e 3 le richieste contemporaneamente
       _firestoreService.checkMovieInList(_uid!, 'watchlist', widget.movieId),
       _firestoreService.checkMovieInList(_uid!, 'watched', widget.movieId),
       _firestoreService.checkMovieInList(_uid!, 'liked', widget.movieId),
     ]);
 
-    if (mounted) {  //la grafica si aggiorna solo se il widget è visiibile
+    //aggiorna la grafica dei bottoni cioè se sono attivi o no
+    if (mounted) {
       setState(() {
         _isInWatchlist = results[0];
         _isWatched = results[1];
@@ -69,11 +69,11 @@ class _MovieDetailPageState extends State<MovieDetailPage> {
     }
   }
 
-  //gestione del tasto watchlist
+  //gestione watchlist
   void _handleWatchlist() async {
     if (_uid == null) return;
     
-    //il service aggiunge o rimuove il film
+    //il service aggiunge e rimuove dal db il film dalla watchlist
     final newState = await _firestoreService.toggleMovieInList(
       uid: _uid!,
       collection: 'watchlist',
@@ -83,14 +83,15 @@ class _MovieDetailPageState extends State<MovieDetailPage> {
       description: widget.description,
       voteAverage: widget.voteAverage,
     );
-    //aggiornamento icona
-    if (mounted) setState(() => _isInWatchlist = newState);
+    
+    if (mounted) setState(() => _isInWatchlist = newState); //aggiorna l'icona
   }
 
   //gestione watched
   void _handleWatched() async {
     if (_uid == null) return;
 
+    //il service aggiunhe e rimuove dal db il film watched
     final newState = await _firestoreService.toggleMovieInList(
       uid: _uid!,
       collection: 'watched',
@@ -101,16 +102,32 @@ class _MovieDetailPageState extends State<MovieDetailPage> {
       voteAverage: widget.voteAverage,
     );
 
+    //se il film è watched viene tolto dalla watchlist
     if (newState == true && _isInWatchlist) {
-      //se il film è segnato come visto viene tolto automaticamente dalla watchlist
       await _firestoreService.removeMovieFromList(_uid!, 'watchlist', widget.movieId);
       if (mounted) setState(() => _isInWatchlist = false);
     }
-    //aggiornamento icona watched
+
+    //se tolgo watched tolge anche like e recensione
+    if (newState == false) {
+       if (_isLiked) {
+        await _firestoreService.removeMovieFromList(_uid!, 'liked', widget.movieId);
+        if (mounted) setState(() => _isLiked = false);
+      }
+      
+      await _firestoreService.deleteReview(_uid!, widget.movieId.toString()); //cancella la reecnsione dal db
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Film rimosso dai visti")),
+        );
+      }
+    }
+
     if (mounted) setState(() => _isWatched = newState);
   }
 
-  //gestione click like
+  //gestione del like
   void _handleLiked() async {
     if (_uid == null) return;
 
@@ -123,13 +140,13 @@ class _MovieDetailPageState extends State<MovieDetailPage> {
       description: widget.description,
       voteAverage: widget.voteAverage,
     );
-    //aggiornamento icona like
+    
     if (mounted) setState(() => _isLiked = newState);
   }
 
   @override
   Widget build(BuildContext context) {
-    final TextTheme textTheme = Theme.of(context).textTheme;
+    final textTheme = Theme.of(context).textTheme;
     final bool isDark = Theme.of(context).brightness == Brightness.dark;
     final Color primaryColor = Theme.of(context).colorScheme.primary;
 
@@ -138,18 +155,18 @@ class _MovieDetailPageState extends State<MovieDetailPage> {
       
       body: Stack(
         children: [
-          CustomScrollView( //con custom scroll view si usano gli sliver per lo scorrimento
+          CustomScrollView( //serve per o scroll con la copertina che si "riduce"
             slivers: [
-              SliverAppBar(
+              SliverAppBar( //appbar che si estende con l'immagine della copertina
                 backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-                expandedHeight: 550, //altezza massima dell'immagine
-                pinned: true, //la barra rimane fissa quando si scorre
+                expandedHeight: 550, //altezza immagine espansa
+                pinned: true, //la "barra" rimane fissa in altro e nel mentre si riduce
                 leading: const SizedBox(),
                 flexibleSpace: FlexibleSpaceBar(
                   background: Stack(
                     fit: StackFit.expand,
                     children: [
-                      Hero( //animaizone hero
+                      Hero( //copertina del film con hero
                         tag: widget.heroTag,
                         child: Image.network(
                           widget.imageUrl,
@@ -157,8 +174,7 @@ class _MovieDetailPageState extends State<MovieDetailPage> {
                           alignment: Alignment.topCenter,
                         ),
                       ),
-                      //sfumatura in basso per rendere leggibile il titolo
-                      Container(
+                      Container(  //sfumatura in basso all'immagine
                         decoration: BoxDecoration(
                           gradient: LinearGradient(
                             begin: Alignment.topCenter,
@@ -178,38 +194,31 @@ class _MovieDetailPageState extends State<MovieDetailPage> {
                 ),
               ),
 
-              //body della pagina
+              //contenuto scrollable
               SliverToBoxAdapter(
                 child: Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 20),
                   child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
-                      Text(widget.title, textAlign: TextAlign.center, style: textTheme.headlineLarge),  //titolo
+                      Text(widget.title,  //titolo del film
+                            textAlign: TextAlign.center,
+                            style: textTheme.headlineLarge),
                       const SizedBox(height: 10),
 
-
-                      //votazioni a scelta tra rating circolre o stelle in base a dove si vede
-                      if (widget.showStars)
-                        StarRating(
-                          rating: widget.voteAverage,
-                          itemSize: 35,
-                        )
-                      else
-                        Column(
-                          children: [
-                            Text("Punteggio", style: Theme.of(context).textTheme.bodySmall),
-                            const SizedBox(height: 8),
-                            RatingCircle(
-                              voteAverage: widget.voteAverage,
-                              size: 50,
-                            ),
-                          ],
-                        ),
+                      Column( //voto medio del film circolare
+                        children: [
+                          Text("Punteggio", style: Theme.of(context).textTheme.bodySmall),
+                          const SizedBox(height: 8),
+                          RatingCircle(
+                            voteAverage: widget.voteAverage,
+                            size: 50,
+                          ),
+                        ],
+                      ),
 
                       const SizedBox(height: 30),
 
-                      //container con i tasti "azione"
+                      //pulsanti "azione"
                       Container(
                         padding: const EdgeInsets.symmetric(vertical: 16),
                         decoration: BoxDecoration(
@@ -220,9 +229,8 @@ class _MovieDetailPageState extends State<MovieDetailPage> {
                           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            //tast watchlist per aggiungere o rimuovere ai film da vedere
-                            _buildActionItem(
-                              context: context,
+                            //tasto watchlist
+                            MovieDetailAction(
                               icon: _isInWatchlist ? Icons.bookmark : Icons.bookmark_border,
                               label: "Watchlist",
                               isActive: _isInWatchlist,
@@ -230,9 +238,8 @@ class _MovieDetailPageState extends State<MovieDetailPage> {
                               onTap: _handleWatchlist,
                             ),
 
-                            //tasto  watched per aggiungerlo o rimuoverlo dai film visti
-                            _buildActionItem(
-                              context: context,
+                            //tasto watched
+                            MovieDetailAction(
                               icon: _isWatched ? Icons.visibility : Icons.visibility_off_outlined,
                               label: "Watched",
                               isActive: _isWatched,
@@ -240,10 +247,9 @@ class _MovieDetailPageState extends State<MovieDetailPage> {
                               onTap: _handleWatched,
                             ),
 
-                            //tasto like per aggiungere o rimuovere dai film piaciuti/preferiti
+                            //tasto like visibile solo se il film è watched
                             if (_isWatched)
-                              _buildActionItem(
-                                context: context,
+                              MovieDetailAction(
                                 icon: _isLiked ? Icons.favorite : Icons.favorite_border,
                                 label: "Like",
                                 isActive: _isLiked,
@@ -251,14 +257,14 @@ class _MovieDetailPageState extends State<MovieDetailPage> {
                                 onTap: _handleLiked,
                               ),
 
-                            //tasto recensisci che porta alla pagina per scrivere la recensione
-                            if (_isWatched && !widget.isPopup)
-                              _buildActionItem(
-                                context: context,
+                            //tasto recensione solo se il film è watched
+                            if (_isWatched)
+                              MovieDetailAction(
                                 icon: Icons.edit,
                                 label: "Recensisci",
                                 isActive: false,
-                                onTap: () { //serve per mettere il titolo del film gia nel campo di ricerca delle recensioni
+                                onTap: () {
+                                  //oggetto movie da passare alla write review page
                                   final movieToSend = Movie(
                                     id: widget.movieId,
                                     title: widget.title,
@@ -268,10 +274,10 @@ class _MovieDetailPageState extends State<MovieDetailPage> {
                                     releaseDate: '',
                                   );
                                   Navigator.push(
-                                    context, 
+                                    context,
                                     MaterialPageRoute(
-                                      builder: (_) => WriteReviewPage(initialMovie: movieToSend) // <--- PASSIAMO IL FILM
-                                    )
+                                      builder: (_) => WriteReviewPage(initialMovie: movieToSend),
+                                    ),
                                   );
                                 },
                               ),
@@ -282,42 +288,12 @@ class _MovieDetailPageState extends State<MovieDetailPage> {
                       const SizedBox(height: 30),
 
                       //descrizione
-                      Align(alignment: Alignment.centerLeft, child: Text("Trama", style: textTheme.headlineSmall)),
+                      Align(alignment: Alignment.centerLeft, child: Text("Descrizione", style: textTheme.headlineSmall)),
                       const SizedBox(height: 12),
                       
-                      Column(
-                        children: [
-                          AnimatedSize( //espandi e ritrai la descrizione
-                            duration: const Duration(milliseconds: 300),
-                            alignment: Alignment.topCenter,
-                            child: Text(
-                              widget.description,
-                              textAlign: TextAlign.left,
-                              maxLines: _isDescriptionExpanded ? null : 4,
-                              overflow: _isDescriptionExpanded ? TextOverflow.visible : TextOverflow.ellipsis,
-                              style: textTheme.bodyMedium,
-                            ),
-                          ),
-                          if (widget.description.length > 150)  //mostra la freccia per espandere solo se i caratteri sono >150
-                            GestureDetector(
-                              onTap: () {
-                                setState(() {
-                                  _isDescriptionExpanded = !_isDescriptionExpanded;
-                                });
-                              },
-                              child: Container(
-                                padding: const EdgeInsets.symmetric(vertical: 12),
-                                width: double.infinity,
-                                child: Center(
-                                  child: Icon(
-                                    _isDescriptionExpanded ? Icons.keyboard_arrow_up : Icons.keyboard_arrow_down,
-                                    color: primaryColor,
-                                  ),
-                                ),
-                              ),
-                            ),
-                        ],
-                      ),
+                      //widget per espandere la recensione con la freccetta
+                      MovieDescription(description: widget.description),
+
                       const SizedBox(height: 100),
                     ],
                   ),
@@ -341,44 +317,6 @@ class _MovieDetailPageState extends State<MovieDetailPage> {
           ),
         ],
       ),
-    );
-  }
-
-  //costruisce la combo circle button + testo per i tasti nel container
-  Widget _buildActionItem({
-    required BuildContext context,
-    required IconData icon,
-    required String label,
-    required VoidCallback onTap,
-    bool isActive = false,
-    Color? activeColor,
-  }) {
-    //se il bottone è attivo usa i colori scelti altrimenti rimane di default
-    final Color? iconColor = isActive ? (activeColor ?? Colors.white) : null;
-    final Color? borderColor = isActive ? (activeColor ?? Colors.white) : null;
-
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        CircleButton(
-          size: 50,
-          icon: icon,
-          onTap: onTap,
-          iconColor: iconColor,
-          borderColor: borderColor,
-          backgroundColor: isActive 
-              ? (activeColor?.withOpacity(0.2) ?? Colors.white.withOpacity(0.2)) 
-              : null,
-        ),
-        const SizedBox(height: 8),
-        Text(
-          label,
-          style: Theme.of(context).textTheme.labelMedium?.copyWith(
-            fontSize: 11,
-            color: isActive ? activeColor : null,
-          ),
-        ),
-      ],
     );
   }
 }

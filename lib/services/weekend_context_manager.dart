@@ -25,7 +25,7 @@ class WeekendContextManager {
     } catch (e) {
       print("[WeekendManager] Errore nel caricamento del json: $e");
       cinemas = [
-        {"name": "Unical Fallback", "lat": 39.362240, "lng": 16.225433}
+        {"name": "Unical", "lat": 39.362240, "lng": 16.225433}  //posizione unical a caso giusto per restituire qualcosa
       ];
     }
   }

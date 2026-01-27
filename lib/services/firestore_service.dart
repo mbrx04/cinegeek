@@ -1,5 +1,6 @@
 //serve per gestire tutte le comunicazioni con firestore
 import 'package:cinegeek/model/review.dart';
+import 'package:cinegeek/model/movie.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 class FirestoreService {
@@ -81,7 +82,7 @@ class FirestoreService {
         .delete();
   }
 
-  // Aggiunge una recensione
+  //aggiunge una recensione
   Future<void> addReview(Review review) async {
     await _db.collection('reviews').add(review.toMap());
   }
@@ -120,5 +121,67 @@ class FirestoreService {
         .map((snapshot) => snapshot.docs
             .map((doc) => Review.fromMap(doc.data(), doc.id))
             .toList());
+  }
+
+  Future<void> deleteReview(String userId, String movieId) async {  //cancella una recensione di un utete per un film specifico
+    try {
+      final snapshot = await _db
+          .collection('reviews')
+          .where('userId', isEqualTo: userId)
+          .where('movieId', isEqualTo: movieId)
+          .get();
+
+      for (var doc in snapshot.docs) {
+        await doc.reference.delete();
+      }
+    } catch (e) {
+      print("Errore eliminazione review: $e");
+    }
+  }
+
+  //per il carosello visti e non votati nella home, mi prendo i film che sono in watched ma non hanno una recensione
+  Future<List<Movie>> getWatchedNotReviewedMovies(String userId) async {
+    try {
+      final watchedSnapshot = await _db //prendo tutti i film in watched
+          .collection('users')
+          .doc(userId)
+          .collection('watched')
+          .orderBy('timestamp', descending: true)
+          .get();
+
+      if (watchedSnapshot.docs.isEmpty) return [];
+
+      final reviewsSnapshot = await _db //prendo le recensioni fattte dall'utente loggato
+          .collection('reviews')
+          .where('userId', isEqualTo: userId)
+          .get();
+
+      final reviewedMovieIds = reviewsSnapshot.docs //set di id dei film gia recensiti
+          .map((doc) => doc['movieId'].toString())
+          .toSet();
+
+      final List<Movie> result = [];  //tengo solo i film con id non presente nelle recensioni
+
+      for (var doc in watchedSnapshot.docs) {
+        final data = doc.data();
+        final String movieId = data['id'].toString();
+
+        if (!reviewedMovieIds.contains(movieId)) {
+          result.add(Movie(
+            id: data['id'],
+            title: data['title'] ?? '',
+            posterPath: data['posterPath'] ?? '', 
+            overview: data['overview'] ?? '',
+            voteAverage: (data['voteAverage'] ?? 0).toDouble(),
+            releaseDate: '',
+          ));
+        }
+      }
+
+      return result;
+    } catch (e) {
+      print("Errore getWatchedNotReviewedMovies: $e");
+      return [];
+    }
   }
 }

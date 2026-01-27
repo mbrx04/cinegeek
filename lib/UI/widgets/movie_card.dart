@@ -49,7 +49,7 @@ class MovieCard extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 6),
-          // Titolo
+          //titolo
           SizedBox(
             width: width,
             child: Text(
