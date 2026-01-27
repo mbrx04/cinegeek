@@ -23,9 +23,9 @@ class ReviewCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final bool isDark = Theme.of(context).brightness == Brightness.dark;  //rilvea il tema
+    final bool isDark = Theme.of(context).brightness == Brightness.dark;  //rileva il tema
 
-    //definisco i colori dinamici per chiaro e scuro
+    //tema chiaro e scuro
     final Color cardBackground = isDark 
         ? Colors.white.withAlpha(13) 
         : Colors.black.withAlpha(10); 
@@ -42,7 +42,7 @@ class ReviewCard extends StatelessWidget {
         decoration: BoxDecoration(
           color: cardBackground,
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: cardBorder),//bordo dinamico per tema chiaro e scuro
+          border: Border.all(color: cardBorder),//bordo per tema chiaro e scuro
         ),
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,

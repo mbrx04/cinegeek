@@ -3,150 +3,114 @@ import '../widgets/circle_button.dart';
 import '../widgets/star_rating.dart';
 
 class ReviewDetailPage extends StatelessWidget {
-  final String movieTitle;
-  final String posterUrl;
-  final String username;
+  final String title;
+  final String imageUrl;
   final String reviewText;
-  final double rating;
+  final String author;
+  final double voteAverage;
   final String heroTag;
 
   const ReviewDetailPage({
     super.key,
-    required this.movieTitle,
-    required this.posterUrl,
-    required this.username,
+    required this.title,
+    required this.imageUrl,
     required this.reviewText,
-    required this.rating,
+    required this.author,
+    required this.voteAverage,
     required this.heroTag,
   });
 
   @override
   Widget build(BuildContext context) {
-    //colori del tema automatico
-    final bool isDark = Theme.of(context).brightness == Brightness.dark;
-    final Color textColor = isDark ? Colors.white : Colors.black;
-    final Color subTextColor = isDark ? Colors.grey : Colors.black54;
+    final textTheme = Theme.of(context).textTheme;
 
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: Stack(
         children: [
-          SingleChildScrollView(
-            padding: const EdgeInsets.fromLTRB(20, 100, 20, 40),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                //locandina
-                Hero(
-                  tag: heroTag,
-                  child: Container(
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(16),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withOpacity(0.3),
-                          blurRadius: 15,
-                          offset: const Offset(0, 10),
-                        )
-                      ],
-                    ),
-                    child: ClipRRect(
-                      borderRadius: BorderRadius.circular(16),
-                      child: Image.network(
-                        posterUrl,
-                        height: 300,
-                        fit: BoxFit.cover,
-                        errorBuilder: (_, __, ___) => Container(
-                          height: 300, 
-                          width: 200, 
-                          color: Colors.grey,
-                          child: const Icon(Icons.movie, size: 50),
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-
-                const SizedBox(height: 24),
-
-                //titolo del film
-                Text(
-                  movieTitle,
-                  textAlign: TextAlign.center,
-                  style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-
-                const SizedBox(height: 16),
-
-                //autore della recensione
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    CircleAvatar(
-                      radius: 12,
-                      backgroundColor: Colors.grey.withOpacity(0.3),
-                      child: Icon(Icons.person, size: 16, color: textColor),
-                    ),
-                    const SizedBox(width: 8),
-                    Text(
-                      "Recensione di ",
-                      style: TextStyle(color: subTextColor, fontSize: 16),
-                    ),
-                    Text(
-                      username,
-                      style: TextStyle(
-                        color: textColor, 
-                        fontSize: 16, 
-                        fontWeight: FontWeight.bold
-                      ),
-                    ),
-                  ],
-                ),
-
-                const SizedBox(height: 16),
-
-                //voot con le stelline
-                StarRating(
-                  rating: rating,
-                  itemSize: 30,
-                  isInteractive: false, //solo leggere
-                ),
-
-                const SizedBox(height: 30),
-
-                //vero testo della recensione
-                Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.all(20),
-                  decoration: BoxDecoration(
-                    color: isDark ? Colors.white.withOpacity(0.05) : Colors.black.withOpacity(0.05),
-                    borderRadius: BorderRadius.circular(20),
-                    border: Border.all(
-                      color: isDark ? Colors.white.withOpacity(0.1) : Colors.black.withOpacity(0.1),
-                    ),
-                  ),
-                  child: Column(
+          CustomScrollView(
+            slivers: [
+              //copertina grande
+              SliverAppBar(
+                backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+                expandedHeight: 550,
+                pinned: true,
+                leading: const SizedBox(),
+                flexibleSpace: FlexibleSpaceBar(
+                  background: Stack(
+                    fit: StackFit.expand,
                     children: [
-                      const Icon(Icons.format_quote, size: 40, color: Colors.grey),
-                      const SizedBox(height: 10),
-                      Text(
-                        reviewText,
-                        style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                          height: 1.5,
-                          fontStyle: FontStyle.italic,
+                      Hero(
+                        tag: heroTag,
+                        child: Image.network(imageUrl, fit: BoxFit.cover, alignment: Alignment.topCenter),
+                      ),
+                      Container(
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            begin: Alignment.topCenter,
+                            end: Alignment.bottomCenter,
+                            colors: [
+                              Colors.transparent,
+                              Theme.of(context).scaffoldBackgroundColor.withOpacity(0.0),
+                              Theme.of(context).scaffoldBackgroundColor.withOpacity(0.8),
+                              Theme.of(context).scaffoldBackgroundColor,
+                            ],
+                            stops: const [0.0, 0.6, 0.85, 1.0],
+                          ),
                         ),
-                        textAlign: TextAlign.center,
                       ),
                     ],
                   ),
                 ),
-              ],
-            ),
+              ),
+
+              SliverToBoxAdapter( //contenuto della recensione
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                  child: Column(
+                    children: [
+                      //titolo film
+                      Text(title, textAlign: TextAlign.center, style: textTheme.headlineLarge),
+                      const SizedBox(height: 10),
+
+                      //voto in stelline seleizonate dall'utente che ha recensito
+                      StarRating(rating: voteAverage, itemSize: 35),
+                      
+                      const SizedBox(height: 10),
+                      
+                      Row(  //autore della recensione
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          const Icon(Icons.person, size: 16, color: Colors.grey),
+                          const SizedBox(width: 5),
+                          Text("Recensione di $author", style: const TextStyle(color: Colors.grey)),
+                        ],
+                      ),
+
+                      const SizedBox(height: 30),
+
+                      Align(  //tasto recensione
+                        alignment: Alignment.centerLeft, 
+                        child: Text("Recensione", style: textTheme.headlineSmall)
+                      ),
+                      const SizedBox(height: 12),
+                      
+                      //testo della recensione
+                      Text(
+                        reviewText,
+                        style: textTheme.bodyMedium,
+                        textAlign: TextAlign.left,
+                      ),
+
+                      const SizedBox(height: 100),
+                    ],
+                  ),
+                ),
+              ),
+            ],
           ),
 
-          //tasto Back in alto a sinistra
+          //tasto back in alto a sx
           Positioned(
             top: 50,
             left: 20,
@@ -155,6 +119,7 @@ class ReviewDetailPage extends StatelessWidget {
               icon: Icons.arrow_back,
               backgroundColor: Colors.black.withOpacity(0.5),
               iconColor: Colors.white,
+              borderColor: Colors.transparent,
               onTap: () => Navigator.pop(context),
             ),
           ),

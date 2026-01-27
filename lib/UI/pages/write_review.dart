@@ -1,18 +1,18 @@
-import 'dart:async';  //SEMPRE PER EVITARE DI FARE CHIAMATE INUTILI ALL'API
-import 'package:cinegeek/model/app_user.dart';
-import 'package:cinegeek/model/review.dart';
-import 'package:cinegeek/services/firestore_service.dart';
-import 'package:firebase_auth/firebase_auth.dart';
+import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import '../../model/movie.dart';
+import '../../model/review.dart';
+import '../../services/firestore_service.dart';
 import '../../services/tmdb_service.dart';
+import '../../services/auth_service.dart';
 import '../widgets/star_rating.dart';
 import '../widgets/circle_button.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
-import '../../services/auth_service.dart';
+import '../widgets/selected_movie_card.dart';
+import '../widgets/movie_search_result.dart';
 
 class WriteReviewPage extends StatefulWidget {
-  final Movie? initialMovie;
+  final Movie? initialMovie;  //se arriviamo in write review da un movie detail il campo è pre compilato
 
   const WriteReviewPage({
     super.key,
@@ -27,35 +27,37 @@ class _WriteReviewPageState extends State<WriteReviewPage> {
   final TmdbService _tmdbService = TmdbService();
   final FirestoreService _firestoreService = FirestoreService();
   final AuthService _authService = AuthService();
+  
   Timer? _debounce;
-
-  //variabili di stato
+  
+  //stati del film selezionato
   Movie? _selectedMovie;
   String? _selectedMovieTitle;
   String? _selectedMovieImage;
 
+  //stato iniziale dopo aver selezionato un film
   double _currentRating = 3.0;
   final TextEditingController _reviewController = TextEditingController();
   final TextEditingController _movieSearchController = TextEditingController();
 
   List<Movie> _searchResults = [];
   bool _isSearchingMovie = false;
-  bool _isPublishing = false; //evita doppi invii di una singola recensione
+  bool _isPublishing = false;
 
   @override
   void initState() {
     super.initState();
-    
-    if (widget.initialMovie != null) {  //se inizialmente c'è un film viene caricato subito come campo di ricerca senza scrivere il titolo
+    if (widget.initialMovie != null) {  //se la write review viene aperta da un movie detail questo lo precompila
       _selectedMovie = widget.initialMovie;
       _selectedMovieTitle = widget.initialMovie!.title;
       _selectedMovieImage = widget.initialMovie!.fullPosterUrl;
       _movieSearchController.text = widget.initialMovie!.title;
       _isSearchingMovie = false; 
+      _searchResults = [];
     }
   }
 
-  //ricerca del film
+  //gestione della ricerca, aspetta 1 secondo e mezzo prma di andare ad effettuare la chiamata così da non fare chiamate inutili
   void _onSearchChanged(String query) {
     if (_debounce?.isActive ?? false) _debounce!.cancel();
 
@@ -69,7 +71,6 @@ class _WriteReviewPageState extends State<WriteReviewPage> {
       }
 
       final results = await _tmdbService.searchMovies(query);
-
       if (mounted) {
         setState(() {
           _searchResults = results;
@@ -79,19 +80,19 @@ class _WriteReviewPageState extends State<WriteReviewPage> {
     });
   }
 
-  //selezione film
+  //una volta cliccato un film dalla lista
   void _selectMovie(Movie movie) {
     setState(() {
       _selectedMovie = movie;
       _selectedMovieTitle = movie.title;
       _selectedMovieImage = movie.fullPosterUrl;
+      //svuotamento ricerca per far chiudere la lista che a tendina
       _isSearchingMovie = false;
       _movieSearchController.text = movie.title;
       _searchResults = [];
     });
-    FocusScope.of(context).unfocus();
+    FocusScope.of(context).unfocus(); //tastiera che si chiude
   }
-
 
   @override
   void dispose() {
@@ -101,42 +102,48 @@ class _WriteReviewPageState extends State<WriteReviewPage> {
     super.dispose();
   }
 
-  //salva recensione
+  //gestione salvataggio delle recensioni
   Future<void> _saveReview() async {
     final user = FirebaseAuth.instance.currentUser;
-    if (user == null){
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Devi essere loggato per scrivere una recensione")),
-      );
+    
+    //anche se non è possibile che un utenet non sia loggato controlliamo per sicurezza
+    if (user == null) {
+      if (mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Devi essere loggato.")));
       return;
     }
 
     if (_selectedMovie == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Seleziona un film")),
-      );
+      if (mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Seleziona un film")));
       return;
     }
 
-    if (_reviewController.text.trim().isEmpty){
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Scrivi una recensione")),
-      );
+    if (_reviewController.text.trim().isEmpty) {
+      if (mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Scrivi una recensione")));
+      return;
+    }
+
+    //controllo che il film sia nei watched ell'utente loggato altirmenti non faccio scrivere la recensione per quel film
+    final isWatched = await _firestoreService.checkMovieInList(user.uid, 'watched', _selectedMovie!.id);
+    if (!isWatched) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(backgroundColor: Colors.red, content: Text("Devi aver visto il film per recensirlo!")),
+        );
+      }
       return;
     }
 
     try {
-
-      setState(() {
-        _isPublishing = true;
-      });
-    
+      setState(() => _isPublishing = true); //caricamento recensione mostrato
+      
+      //username dell'utente che ha messo la recensione
       String authorName = 'utente sconosciuto';
       final appUser = await _authService.fetchUserData(user.uid);
       if (appUser != null && appUser.username.isNotEmpty) {
         authorName = appUser.username;
       }
 
+      //oggetto review
       final review = Review(
         userId: user.uid,
         username: authorName,
@@ -148,13 +155,12 @@ class _WriteReviewPageState extends State<WriteReviewPage> {
         createdAt: DateTime.now(),
       );
 
-    await _firestoreService.addReview(review);  //salva sul db
+      //invio al db la recensione
+      await _firestoreService.addReview(review);
 
-    if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("Recensione pubblicata con successo!")),
-        );
-        Navigator.pop(context); //dopo il messaggio di successo torna indietro
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Recensione pubblicata!")));
+        Navigator.pop(context); 
       }
     } catch (e) {
       if (mounted) {
@@ -166,25 +172,12 @@ class _WriteReviewPageState extends State<WriteReviewPage> {
 
   @override
   Widget build(BuildContext context) {
-    final bool isDark = Theme.of(context).brightness == Brightness.dark;  //rileva il tema
-
-    //definisco i colori che saranno dinamici
-    final Color inputFillColor = isDark 
-        ? Colors.black.withAlpha(153) 
-        : Colors.black.withAlpha(10);
-
-    final Color inputBorderColor = isDark 
-        ? Colors.white.withAlpha(26) 
-        : Colors.black.withAlpha(26);
-
-    //colori del testo sempre per chiaro e scuro
+    //tema chiaro e scuro
+    final bool isDark = Theme.of(context).brightness == Brightness.dark;
+    final Color inputFillColor = isDark ? Colors.black.withAlpha(153) : Colors.black.withAlpha(10);
+    final Color inputBorderColor = isDark ? Colors.white.withAlpha(26) : Colors.black.withAlpha(26);
     final Color textColor = isDark ? Colors.white : Colors.black;
     final Color hintColor = isDark ? Colors.white70 : Colors.black54;
-
-    //colori per elenco dei film che si espande
-    final Color dropdownColor = isDark 
-        ? Colors.black.withAlpha(230) 
-        : Colors.white.withAlpha(240);
 
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
@@ -195,25 +188,24 @@ class _WriteReviewPageState extends State<WriteReviewPage> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text("Scrivi Recensione",
-                    style: Theme.of(context).textTheme.headlineLarge),
+                Text("Scrivi Recensione", style: Theme.of(context).textTheme.headlineLarge),
                 const SizedBox(height: 30),
 
+                //1)
                 //ricerca film
-                const Text("Quale film vuoi recensire?", 
-                    style: TextStyle(fontSize: 16, color: Colors.grey)),
+                const Text("Quale film vuoi recensire?", style: TextStyle(fontSize: 16, color: Colors.grey)),
                 const SizedBox(height: 10),
 
                 Container(
                   decoration: BoxDecoration(
                     color: inputFillColor,
                     borderRadius: BorderRadius.circular(35),
-                    border: Border.all(color: inputBorderColor, width: 1),
+                    border: Border.all(color: inputBorderColor),
                   ),
                   padding: const EdgeInsets.symmetric(horizontal: 16),
                   child: TextField(
                     controller: _movieSearchController,
-                    onChanged: _onSearchChanged,
+                    onChanged: _onSearchChanged, //anche qui la ricerca con attesa
                     style: TextStyle(color: textColor),
                     decoration: InputDecoration(
                       hintText: "Cerca il titolo...",
@@ -224,87 +216,26 @@ class _WriteReviewPageState extends State<WriteReviewPage> {
                   ),
                 ),
 
+                //mostro lista solo se sto cercando
                 if (_isSearchingMovie && _searchResults.isNotEmpty)
-                  Container(
-                    margin: const EdgeInsets.only(top: 8),
-                    constraints: const BoxConstraints(maxHeight: 250),
-                    decoration: BoxDecoration(
-                      color: dropdownColor,
-                      borderRadius: BorderRadius.circular(20),
-                      border: Border.all(color: inputBorderColor),
-                    ),
-                    child: ClipRRect(
-                      borderRadius: BorderRadius.circular(20),
-                      child: ListView.separated(
-                        padding: EdgeInsets.zero,
-                        shrinkWrap: true,
-                        itemCount: _searchResults.length,
-                        separatorBuilder: (ctx, i) => Divider(color: inputBorderColor, height: 1),
-                        itemBuilder: (context, index) {
-                          final movie = _searchResults[index];
-                          return ListTile(
-                            leading: ClipRRect(
-                              borderRadius: BorderRadius.circular(4),
-                              child: Image.network(
-                                movie.fullPosterUrl,
-                                width: 40,
-                                height: 60,
-                                fit: BoxFit.cover,
-                                errorBuilder: (_,__,___) => Icon(Icons.movie, color: textColor),
-                              ),
-                            ),
-                            title: Text(
-                              movie.title,
-                              style: TextStyle(color: textColor, fontWeight: FontWeight.w600),
-                            ),
-                            subtitle: Text(
-                              movie.releaseDate.split('-').first,
-                              style: TextStyle(color: hintColor, fontSize: 12),
-                            ),
-                            onTap: () => _selectMovie(movie),
-                          );
-                        },
-                      ),
-                    ),
+                  MovieSearchResults(
+                    results: _searchResults, 
+                    onSelect: _selectMovie
                   ),
 
                 const SizedBox(height: 20),
 
+                //2)
                 //film selezionato
                 if (_selectedMovieTitle != null) ...[
-                  Center(
-                    child: Column(
-                      children: [
-                        Container(
-                          decoration: BoxDecoration(
-                            boxShadow: [
-                              BoxShadow(  //ombre
-                                  color: isDark ? Colors.black.withAlpha(100) : Colors.black.withAlpha(40), 
-                                  blurRadius: 15, 
-                                  spreadRadius: 2)
-                            ]
-                          ),
-                          child: ClipRRect(
-                            borderRadius: BorderRadius.circular(16),
-                            child: Image.network(
-                              _selectedMovieImage!,
-                              height: 180,
-                              fit: BoxFit.cover,
-                            ),
-                          ),
-                        ),
-                        const SizedBox(height: 16),
-                        Text(
-                          _selectedMovieTitle!,
-                          textAlign: TextAlign.center,
-                          style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
-                        ),
-                      ],
-                    ),
+                  SelectedMovieCard(
+                    title: _selectedMovieTitle!, 
+                    imageUrl: _selectedMovieImage!
                   ),
                   const SizedBox(height: 30),
                 ],
 
+                //3)
                 //voto con le stelline
                 const Center(child: Text("Il tuo voto", style: TextStyle(fontSize: 16, color: Colors.grey))),
                 const SizedBox(height: 10),
@@ -313,27 +244,22 @@ class _WriteReviewPageState extends State<WriteReviewPage> {
                     rating: _currentRating,
                     isInteractive: true,
                     itemSize: 45,
-                    onRatingUpdate: (rating) {
-                      setState(() {
-                        _currentRating = rating;
-                      });
-                    },
+                    onRatingUpdate: (rating) => setState(() => _currentRating = rating),
                   ),
                 ),
 
                 const SizedBox(height: 30),
 
-                //input recensione dell'utente
-                const Text("La tua opinione (max 100 car.)",
-                    style: TextStyle(fontSize: 16, color: Colors.grey)),
+                //4)
+                //recensione
+                const Text("La tua opinione (max 100 car.)", style: TextStyle(fontSize: 16, color: Colors.grey)),
                 const SizedBox(height: 10),
                 
-                //box testo in cui si scrive la recensione
                 Container(
                   decoration: BoxDecoration(
                     color: inputFillColor,
                     borderRadius: BorderRadius.circular(20),
-                    border: Border.all(color: inputBorderColor, width: 1),
+                    border: Border.all(color: inputBorderColor),
                   ),
                   padding: const EdgeInsets.all(16),
                   child: TextField(
@@ -353,15 +279,15 @@ class _WriteReviewPageState extends State<WriteReviewPage> {
 
                 const SizedBox(height: 40),
 
+                //5)
                 //bottone pubblica recensione
                 SizedBox(
                   width: double.infinity,
                   height: 55,
                   child: ElevatedButton(
-                    onPressed: (_selectedMovieTitle != null && _reviewController.text.isNotEmpty)
-                        ? () async {
-                            await _saveReview();
-                          }
+                    //il bottone si attiva solo se c'è un film selezionato
+                    onPressed: (_selectedMovieTitle != null && _reviewController.text.isNotEmpty && !_isPublishing)
+                        ? _saveReview
                         : null,
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Theme.of(context).colorScheme.primary,
@@ -369,18 +295,18 @@ class _WriteReviewPageState extends State<WriteReviewPage> {
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(35)),
                       elevation: 5,
                     ),
-                    child: const Text("Pubblica Recensione",
-                        style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                    child: _isPublishing 
+                        ? const CircularProgressIndicator(color: Colors.black)
+                        : const Text("Pubblica Recensione", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
                   ),
                 ),
               ],
             ),
           ),
 
-          //tasto indietro in alto a sx
+          //tasto back in alto a sx
           Positioned(
-            top: 50,
-            left: 20,
+            top: 50, left: 20,
             child: CircleButton(
               icon: Icons.arrow_back,
               onTap: () => Navigator.pop(context),

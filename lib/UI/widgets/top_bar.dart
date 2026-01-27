@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
-//in questo caso abbiamo usato una topbar per mostrare il logo dell'app
-//in alto in tutte le vie ma si potrebbe usare anche per altri scopi come
+//in questo caso abbiamo usato una topbar per mostrare il logo dell'app in alto in tutte le view ma si potrebbe usare anche per altri scopi come
 //per un hamburger menù o altre icone
 class TopBarLogo extends StatelessWidget {
   final double height;
