@@ -48,7 +48,12 @@ class _WriteReviewPageState extends State<WriteReviewPage> {
   void initState() {
     super.initState();
     if (widget.initialMovie != null) {  //se la write review viene aperta da un movie detail questo lo precompila
-      _selectMovie(widget.initialMovie!);
+      _selectedMovie = widget.initialMovie;
+      _selectedMovieTitle = widget.initialMovie!.title;
+      _selectedMovieImage = widget.initialMovie!.fullPosterUrl;
+      _movieSearchController.text = widget.initialMovie!.title;
+      _isSearchingMovie = false; 
+      _searchResults = [];
     }
   }
 
