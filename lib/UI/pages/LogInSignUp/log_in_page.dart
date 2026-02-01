@@ -97,14 +97,7 @@ class _LoginPageState extends State<LoginPage>
 
                         if (user != null)
                         {
-                          navigator.pushAndRemoveUntil
-                            (
-                            MaterialPageRoute
-                              (
-                              builder: (context) => const MainNavigation(),
-                            ),
-                                (Route<dynamic> route) => false,
-                          );
+                          navigator.pushAndRemoveUntil(MaterialPageRoute(builder: (context) => const MainNavigation(),), (Route<dynamic> route) => false,);
                         }
                         else
                         {

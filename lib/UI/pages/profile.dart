@@ -1,5 +1,7 @@
+import 'package:cinegeek/UI/pages/at_cinema_page.dart';
 import 'package:cinegeek/UI/pages/friends_page.dart';
 import 'package:cinegeek/UI/pages/settings.dart';
+import 'package:cinegeek/UI/pages/watched.dart';
 import 'package:cinegeek/UI/widgets/top_bar.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -103,6 +105,16 @@ class _ProfileState extends State<Profile> {
                     onTap: ()
                     {
                       Navigator.push(context,MaterialPageRoute(builder: (_) => const FriendsPage()));
+                    },
+                  ),
+
+                  _ProfileMenuItem
+                    (
+                    title: 'Guardati',
+                    icon: Icons.visibility,
+                    onTap: ()
+                    {
+                      Navigator.push(context,MaterialPageRoute(builder: (_) => const WatchedPage()));
                     },
                   ),
 

@@ -1,7 +1,9 @@
 import 'package:cinegeek/UI/pages/LogInSignUp/auth_gate.dart';
+import 'package:cinegeek/services/at_cinema_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'services/weekend_context_manager.dart'; 
+import 'UI/pages/at_cinema_page.dart';
+import 'services/weekend_context_manager.dart';
 import 'UI/pages/home.dart';
 import 'UI/pages/review.dart';
 import 'UI/pages/profile.dart';
@@ -15,11 +17,13 @@ import 'firebase_options.dart';
 @pragma('vm:entry-point')
 void callbackDispatcher() {
   Workmanager().executeTask((task, inputData) async {
-    WidgetsFlutterBinding.ensureInitialized(); 
+    WidgetsFlutterBinding.ensureInitialized();
     print("--- [Back end] Inizio: $task ---");
     try {
       WeekendContextManager manager = WeekendContextManager();
       await manager.init(isBackground: true);
+      AtCinemaService cinemaService = AtCinemaService();
+      await cinemaService.checkArrival();
       print("--- [Back end] OK ---");
       return Future.value(true);
     } catch (e) {
@@ -29,46 +33,53 @@ void callbackDispatcher() {
   });
 }
 
-void main() async{
-  WidgetsFlutterBinding.ensureInitialized();  //inizializza binding
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
 
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
-  print("!!!!!!!!!!!!!!!!firebase inizializzato!!!!!!!!!!!!!!!!!!");
-  
-  Workmanager().initialize( //inizializzazione del workmanager per funzionare in background la posizione
+  print("!!!!!!!!!!!!!!!! firebase inizializzato !!!!!!!!!!!!!!!!!!");
+
+  Workmanager().initialize(
     callbackDispatcher,
     isInDebugMode: false,
   );
 
-  Workmanager().registerPeriodicTask( //ogni 15 minuti controlla la posizione
+  Workmanager().registerPeriodicTask(
     "1",
     "check_cinema_proximity",
     frequency: const Duration(minutes: 15),
   );
 
-  final weekendMgr = WeekendContextManager();
-  await weekendMgr.init();
-
-  //AGGIUNGETE QUI I VOSTRI MANAGER PER LE ALTRE FUNZIONALITà
-
   runApp(const CineGeekApp());
+
+  _initializeBackgroundServices();
+}
+
+Future<void> _initializeBackgroundServices() async {
+  try {
+    final weekendMgr = WeekendContextManager();
+    await weekendMgr.init();
+
+    final cinemaService = AtCinemaService();
+    await cinemaService.checkArrival();
+
+    print("--- [Servizi] Inizializzazione completata ---");
+  } catch (e) {
+    print("--- [Servizi] Errore inizializzazione: $e ---");
+  }
 }
 
 class CineGeekApp extends StatelessWidget {
   const CineGeekApp({super.key});
 
   @override
-  Widget build(BuildContext context)
-  {
-    return ValueListenableBuilder<ThemeMode>
-    (
+  Widget build(BuildContext context) {
+    return ValueListenableBuilder<ThemeMode>(
       valueListenable: themeNotifier,
-      builder: (context, currentMode, _)
-      {
-        return MaterialApp
-        (
+      builder: (context, currentMode, _) {
+        return MaterialApp(
           debugShowCheckedModeBanner: false,
           title: 'CineGeek',
           theme: AppTheme.lightTheme,
@@ -81,7 +92,6 @@ class CineGeekApp extends StatelessWidget {
   }
 }
 
-//nav bar e navigazione principale
 class MainNavigation extends StatefulWidget {
   const MainNavigation({super.key});
 
@@ -90,12 +100,31 @@ class MainNavigation extends StatefulWidget {
 }
 
 class _MainNavigationState extends State<MainNavigation> {
-  int _selectedIndex = 0; 
-  bool _isSearching = false; 
-  String _searchQuery = ""; 
-  
-  //key globale per comandare la navbar
+  int _selectedIndex = 0;
+  bool _isSearching = false;
+  String _searchQuery = "";
+
   final GlobalKey<LiquidNavBarState> _navBarKey = GlobalKey<LiquidNavBarState>();
+
+  @override
+  void initState() {
+    super.initState();
+    // Esegue il controllo del cinema dopo che il primo frame è stato renderizzato
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _checkCinemaEntry();
+    });
+  }
+
+  void _checkCinemaEntry() async {
+    // Controllo se l'utente è già al cinema per mostrare la pagina dedicata
+    final bool shouldShow = await AtCinemaService().shouldShowCinemaPage();
+    if (shouldShow && mounted) {
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (_) => const AtCinemaPage()),
+      );
+    }
+  }
 
   static final List<Widget> _pages = <Widget>[
     const HomePage(),
@@ -119,17 +148,15 @@ class _MainNavigationState extends State<MainNavigation> {
   @override
   Widget build(BuildContext context) {
     return PopScope(
-      canPop: false, //disabilita la chiusura automatica
+      canPop: false,
       onPopInvoked: (didPop) {
         if (didPop) return;
 
-        //gestisce la tastiera
         if (MediaQuery.of(context).viewInsets.bottom > 0) {
           FocusScope.of(context).unfocus();
           return;
         }
 
-        //gestisce la barra di ricerca
         final bool isBarOpen = _navBarKey.currentState?.isSearchOpen ?? false;
 
         if (_isSearching || isBarOpen) {
@@ -141,7 +168,6 @@ class _MainNavigationState extends State<MainNavigation> {
           return;
         }
 
-        //gestisce le pagine
         if (_selectedIndex != 0) {
           setState(() {
             _selectedIndex = 0;
@@ -149,31 +175,24 @@ class _MainNavigationState extends State<MainNavigation> {
           return;
         }
 
-        //chiude l'app
         if (context.mounted) {
-          SystemNavigator.pop(); 
+          SystemNavigator.pop();
         }
       },
       child: Scaffold(
         body: Stack(
           children: [
-            //layer 1
             IndexedStack(
               index: _selectedIndex,
               children: _pages,
             ),
-
-            //layer 2
             if (_isSearching)
               Positioned.fill(
                 child: Container(
-                  //usa il colore di sfondo in base al tema
-                  color: Theme.of(context).colorScheme.surface, 
+                  color: Theme.of(context).colorScheme.surface,
                   child: SearchResultsPage(query: _searchQuery),
                 ),
               ),
-
-            //layer 3
             Positioned(
               bottom: 20,
               left: 0,

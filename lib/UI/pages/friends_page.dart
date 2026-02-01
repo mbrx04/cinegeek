@@ -181,7 +181,7 @@ class _FriendsPageState extends State<FriendsPage>
 
                               onTap: ()
                               {
-                                Navigator.push(context, MaterialPageRoute(builder: (_) => UserViewPage(userId: friend['uid']),),);
+                                Navigator.push(context, MaterialPageRoute(builder: (_) => UserViewPage(userId: friend['uid'],userName:friend['username']),),);
                               },
                               onDelete: () async
                               {

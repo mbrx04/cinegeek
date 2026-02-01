@@ -4,28 +4,40 @@ class NotificationService {
   final FlutterLocalNotificationsPlugin _notificationsPlugin =
       FlutterLocalNotificationsPlugin();
 
-  Future<void> init({bool isBackground = false}) async {
+  Future<void> init({bool isBackground = false}) async
+  {
     const AndroidInitializationSettings initializationSettingsAndroid =
-        AndroidInitializationSettings('@mipmap/ic_launcher');
+    AndroidInitializationSettings('@mipmap/ic_launcher');
 
     const InitializationSettings initializationSettings = InitializationSettings(
       android: initializationSettingsAndroid,
     );
 
-    await _notificationsPlugin.initialize(initializationSettings);
+    // Il comando initialize deve contenere la logica del click
+    await _notificationsPlugin.initialize
+      (
+      initializationSettings,
+      onDidReceiveNotificationResponse: (NotificationResponse response)
+      {
+        if (response.payload == "at_cinema_auth")
+        {
+          print("Notifica Cinema cliccata! Autorizzo accesso...");
+          // Qui andrebbe la logica Navigator.push se hai una chiave globale
+        }
+      },
+    );
+
     print("[NotificationService] Inizializzato (Background: $isBackground)");
 
-    if (!isBackground) {
-      final AndroidFlutterLocalNotificationsPlugin? androidImplementation =
-          _notificationsPlugin.resolvePlatformSpecificImplementation<
-              AndroidFlutterLocalNotificationsPlugin>();
+    if (!isBackground)
+    {
+      final androidImplementation = _notificationsPlugin
+          .resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>();
 
-      if (androidImplementation != null) {
+      if (androidImplementation != null)
+      {
         await androidImplementation.requestNotificationsPermission();
-        print("[NotificationService] Richiesta permessi inviata (Foreground).");
       }
-    } else {
-      print("[NotificationService] Saltata richiesta permessi (Siamo in Background).");
     }
   }
 
@@ -33,6 +45,7 @@ class NotificationService {
     required int id,
     required String title,
     required String body,
+    String? payload
   }) async {
     const AndroidNotificationDetails androidPlatformChannelSpecifics =
         AndroidNotificationDetails(
@@ -51,6 +64,7 @@ class NotificationService {
       title,
       body,
       platformChannelSpecifics,
+      payload: payload
     );
   }
 }

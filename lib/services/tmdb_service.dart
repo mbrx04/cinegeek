@@ -1,4 +1,6 @@
 import 'dart:convert';
+import 'package:cinegeek/services/auth_service.dart';
+import 'package:cinegeek/services/firestore_service.dart';
 import 'package:http/http.dart' as http;
 import '../api_keys.dart'; 
 import '../model/movie.dart'; 
@@ -48,24 +50,25 @@ class TmdbService {
     return _getMovies('/movie/upcoming');
   }
 
-  //serve per una simulazione momentanea dei film visti e non votati in quanto non esiste ancora un db
-  Future<List<Movie>> getWatchedMoviesPlaceholder() async {
-    return _getMovies('/movie/now_playing');
-  }
-
   //per la ricerca
   Future<List<Movie>> searchMovies(String query) async {
     if (query.isEmpty) return [];
     return _getMovies('/search/movie?query=$query');
   }
 
-  //per i film da guardare
-  Future<List<Movie>> getWatchlist(String username) async {
-    return getWatchedMoviesPlaceholder();
+  Future<List<Movie>> getMoviesNowPlaying() async {
+  return _getMovies('/movie/now_playing');
   }
 
-  //per i film piaciuti
-  Future<List<Movie>> getLikedMovies(String username) async {
-    return getPopularMovies();
+  Future<List<Movie>> getMovieNowPlayingNotWatched() async
+  {
+    final user = await AuthService().getCurrentUser();
+    final nowPlaying=await getMoviesNowPlaying();
+    final watched=await FirestoreService().getWatched(user!.uid);
+
+    final watchedIds = watched.map((m) => m.id).toSet();
+
+    return nowPlaying.where((movie) => !watchedIds.contains(movie.id)).toList();
   }
+
 }

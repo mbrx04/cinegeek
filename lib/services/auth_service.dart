@@ -1,6 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter/material.dart';
 import '../model/app_user.dart';
 
 class AuthService
@@ -50,7 +49,9 @@ class AuthService
     final doc = await _db.collection('users').doc(uid).get();
 
     if (doc.exists && doc.data() != null)
+    {
       return AppUser.fromFirestore(doc.data()!);
+    }
 
     return null;
   }
@@ -71,7 +72,9 @@ class AuthService
           final user = credential.user;
 
           if (user == null)
+          {
             return null;
+          }
 
           return await fetchUserData(credential.user!.uid);
         }
@@ -97,7 +100,9 @@ class AuthService
           final user = credential.user;
 
           if (user == null)
+          {
             return null;
+          }
 
           final newUser=AppUser(uid: user.uid, email: email, username: username);
 

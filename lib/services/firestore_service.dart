@@ -138,6 +138,20 @@ class FirestoreService {
       print("Errore eliminazione review: $e");
     }
   }
+  Future<List<Movie>> getWatched(String userId) async
+  {
+    final watchedSnapshot = await _db.collection('users').doc(userId).collection('watched').orderBy('timestamp', descending: true).get();
+    final List<Movie> result = [];
+    if (watchedSnapshot.docs.isEmpty) return [];
+
+    for(var doc in watchedSnapshot.docs)
+    {
+      final data=doc.data();
+
+      result.add(Movie(id: data['id'], title: data['title'], posterPath: data['posterPath'], overview: data['overview'] ?? '', voteAverage: (data['voteAverage'] ?? 0).toDouble(), releaseDate: '',));
+    }
+    return result;
+  }
 
   //per il carosello visti e non votati nella home, mi prendo i film che sono in watched ma non hanno una recensione
   Future<List<Movie>> getWatchedNotReviewedMovies(String userId) async {
