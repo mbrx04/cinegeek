@@ -13,6 +13,7 @@ import 'UI/theme.dart';
 import 'package:workmanager/workmanager.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
+import 'services/notification_service.dart';
 
 @pragma('vm:entry-point')
 void callbackDispatcher() {
@@ -33,6 +34,8 @@ void callbackDispatcher() {
   });
 }
 
+final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
@@ -40,6 +43,11 @@ void main() async {
     options: DefaultFirebaseOptions.currentPlatform,
   );
   print("!!!!!!!!!!!!!!!! firebase inizializzato !!!!!!!!!!!!!!!!!!");
+
+  //Notifiche
+  final notificationService = NotificationService();
+  await notificationService.init();
+  await notificationService.scheduleCineGeekReminders();
 
   Workmanager().initialize(
     callbackDispatcher,
@@ -80,6 +88,7 @@ class CineGeekApp extends StatelessWidget {
       valueListenable: themeNotifier,
       builder: (context, currentMode, _) {
         return MaterialApp(
+          navigatorKey: navigatorKey,
           debugShowCheckedModeBanner: false,
           title: 'CineGeek',
           theme: AppTheme.lightTheme,
