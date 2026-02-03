@@ -98,7 +98,7 @@ class NotificationService {
       now.year,
       now.month,
       now.day,
-      9,
+      16,
     );
 
     //Trova il prossimo giorno corretto

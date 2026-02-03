@@ -49,6 +49,12 @@ void main() async {
   await notificationService.init();
   await notificationService.scheduleCineGeekReminders();
 
+  try {
+    await notificationService.scheduleCineGeekReminders(); 
+  } catch (e) {
+    print("Errore notifiche ignorato: $e");
+  }
+
   Workmanager().initialize(
     callbackDispatcher,
     isInDebugMode: false,
