@@ -24,7 +24,6 @@ dependencies:
   provider: ^6.1.2
   circle_nav_bar: ^2.2.0
   flutter_launcher_icons: ^0.14.4
-  cupertino_native: ^0.1.1
   anim_search_bar: ^2.0.3
   google_fonts: ^6.3.3
   flutter_rating_bar: ^4.0.1
