@@ -1,10 +1,11 @@
+import 'package:cinegeek/UI/pages/LogInSignUp/sign_up_page.dart';
 import 'package:flutter/material.dart';
 import '../../../main.dart';
 import '../../../services/auth_service.dart';
-import '../../widgets/circle_button.dart';
 import '../../widgets/top_bar.dart';
 import '../../widgets/cineGlassButton.dart';
 import '../../widgets/cineGlassTextField.dart';
+
 
 class LoginPage extends StatefulWidget
 {
@@ -31,10 +32,10 @@ class _LoginPageState extends State<LoginPage>
   @override
   Widget build(BuildContext context)
   {
-    final textTheme = Theme.of(context).textTheme;
+    final theme = Theme.of(context);
 
     return Scaffold
-      (
+    (
       body:
       Column
       (
@@ -42,96 +43,104 @@ class _LoginPageState extends State<LoginPage>
         children:
         [
           const TopBarLogo(),
-
-          const SizedBox(height: 50),
+          const SizedBox(height: 40),
 
           Expanded
           (
-            child: Center
+            child:
+            SingleChildScrollView
             (
-              child: Column
+              child:
+              Padding
               (
-                mainAxisSize: MainAxisSize.min,
-                children:
-                [
-                  Text("Login", style: textTheme.headlineMedium),
-                  const SizedBox(height: 32),
+                padding: const EdgeInsets.symmetric(horizontal: 24),
+                child:
+                Column
+                (
+                  children:
+                  [
+                    Text("Log In", style: theme.textTheme.headlineMedium),
+                    const SizedBox(height: 60),
 
-                  CineGlassTextField
-                  (
-                    hint: "Email",
-                    controller: emailController,
-                  ),
+                    Container
+                      (
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(border: Border.all(color: theme.colorScheme.outline.withAlpha(77)), borderRadius: BorderRadius.circular(12),),
+                      child:
+                      Column
+                      (
+                        children:
+                        [
+                          const SizedBox(height: 16),
+                          CineGlassTextField(hint: "Email", controller: emailController),
 
-                  const SizedBox(height: 16),
+                          const SizedBox(height: 16),
+                          CineGlassTextField(hint: "Password", obscure: true, controller: passwordController),
 
-                  CineGlassTextField
-                  (
-                    hint: "Password",
-                    obscure: true,
-                    controller: passwordController,
-                  ),
+                          const SizedBox(height: 16),
+                        ],
+                      ),
+                    ),
 
-                  const SizedBox(height: 32),
+                    const SizedBox(height: 32),
 
-                  CineGlassButton
-                  (
-                    label: "Accedi",
-                    onTap: () async
-                    {
-                      final navigator = Navigator.of(context);
-                      final messenger = ScaffoldMessenger.of(context);
-                      final email=emailController.text.trim();
-                      final password= passwordController.text.trim();
-
-                      if (email.isEmpty || password.isEmpty)
-                      {
-                        messenger.showSnackBar
-                        (
-                          const SnackBar(content: Text("Inserisci email e password")),
-                        );
-                        return;
-                      }
-                      try {
-                        final user = await authService.logIn(email: email, password: password,);
-
-                        if (user != null)
+                    CineGlassButton
+                    (
+                        label: "Accedi",
+                        onTap: () async
                         {
-                          navigator.pushAndRemoveUntil(MaterialPageRoute(builder: (context) => const MainNavigation(),), (Route<dynamic> route) => false,);
+                          final navigator = Navigator.of(context);
+                          final messenger = ScaffoldMessenger.of(context);
+                          final email = emailController.text.trim();
+                          final password = passwordController.text.trim();
+
+                          if (email.isEmpty || password.isEmpty)
+                          {
+                            messenger.showSnackBar(const SnackBar(content: Text("Inserisci email e password")));
+                            return;
+                          }
+
+                          try
+                          {
+                            final user = await authService.logIn(email: email, password: password);
+
+                            if (user != null)
+                            {
+                              navigator.pushAndRemoveUntil(MaterialPageRoute(builder: (context) => const MainNavigation()), (route) => false,);
+                            }
+                            else
+                            {
+                              messenger.showSnackBar(const SnackBar(content: Text("Credenziali non valide")));
+                            }
+                          }
+                          catch (e)
+                          {
+                            messenger.showSnackBar(const SnackBar(content: Text("Login fallito")));
+                          }
                         }
-                        else
-                        {
-                          messenger.showSnackBar(const SnackBar(content: Text("Credenziali non valide")),);
-                        }
-                      }
-                      catch (e)
-                      {
-                        messenger.showSnackBar
-                        (
-                          const SnackBar
-                          (
-                            content: Text("Login fallito"),
-                          ),
-                        );
-                      }
-                    },
-                  ),
-                ],
+                    ),
+
+                    const SizedBox(height: 24),
+
+                    GestureDetector
+                    (
+                      onTap: () {Navigator.push(context, MaterialPageRoute(builder: (context) => const SignUpPage()),);},
+                      child: Row
+                      (
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children:
+                        [
+                          Text("Non Hai un Account? ", style: TextStyle(color: theme.colorScheme.onSurface.withAlpha(178), fontSize: 14),),
+                          Text("Registrati", style: TextStyle(color: theme.colorScheme.primary, fontWeight: FontWeight.bold, fontSize: 14,),),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
-          ),
-
-          //Padding(
-          //  padding: const EdgeInsets.only(left: 20, bottom: 20),
-          //  child: CircleButton(
-          //    icon: Icons.arrow_back,
-          //    onTap: ()
-          //      {
-          //        Navigator.pop(context);
-          //      }
-          //  ),
-          //),
-        ],
+          )
+        ]
       ),
     );
   }

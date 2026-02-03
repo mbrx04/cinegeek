@@ -1,15 +1,12 @@
-import 'package:cinegeek/UI/pages/at_cinema_page.dart';
+import 'package:cinegeek/UI/pages/LogInSignUp/log_in_page.dart';
 import 'package:cinegeek/UI/pages/friends_page.dart';
 import 'package:cinegeek/UI/pages/settings.dart';
 import 'package:cinegeek/UI/pages/watched.dart';
 import 'package:cinegeek/UI/widgets/top_bar.dart';
 import 'package:flutter/material.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import '../../model/app_user.dart';
 import '../../services/auth_service.dart';
-import '../widgets/top_bar.dart';
-import 'movie_grid_page.dart'; 
-import 'LogInSignUp/auth_landing_page.dart';
+import 'movie_grid_page.dart';
 
 class Profile extends StatefulWidget {
   const Profile({super.key});
@@ -43,7 +40,7 @@ class _ProfileState extends State<Profile> {
     await _authService.logOut();
     if (mounted) {
       Navigator.of(context).pushAndRemoveUntil(
-        MaterialPageRoute(builder: (context) => const AuthLandingPage()),
+        MaterialPageRoute(builder: (context) => const LoginPage()),
         (route) => false,
       );
     }
