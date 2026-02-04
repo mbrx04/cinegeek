@@ -5,6 +5,7 @@ import '../../widgets/circle_button.dart';
 import '../../widgets/top_bar.dart';
 import '../../widgets/cineGlassButton.dart';
 import '../../widgets/cineGlassTextField.dart';
+import 'log_in_page.dart';
 
 class SignUpPage extends StatefulWidget
 {
@@ -31,7 +32,6 @@ class _SignUpPageState extends State<SignUpPage>
     super.dispose();
   }
 
-  // DENTRO sign_up_page.dart
 
   Future<void> _signUp(BuildContext context) async {
     final navigator = Navigator.of(context);
@@ -41,47 +41,39 @@ class _SignUpPageState extends State<SignUpPage>
     final confirmPassword = confirmPasswordController.text.trim();
     final username = usernameController.text.trim();
 
-    if (username.isEmpty || email.isEmpty || password.isEmpty) {
+    if (username.isEmpty || email.isEmpty || password.isEmpty)
+    {
       messenger.showSnackBar(const SnackBar(content: Text("Tutti i campi sono obbligatori")));
       return;
     }
-    if (password != confirmPassword) {
+
+    if (password != confirmPassword)
+    {
       messenger.showSnackBar(const SnackBar(content: Text("Le password non coincidono")));
       return;
     }
 
-    try {
-      // 1. Controllo username unico
+    try
+    {
+      // Controllo username unico
       bool isUnique = await authService.isUsernameUnique(username);
-      if (!isUnique) {
+      if (!isUnique)
+      {
         messenger.showSnackBar(const SnackBar(content: Text("Username già occupato, scegline un altro")));
         return;
       }
 
-      // 2. Prova a registrare
-      // IMPORTANTE: Salviamo il risultato in una variabile 'result'
-      final result = await authService.signUp(
-          email: email, 
-          password: password, 
-          username: username
-      );
+      // Prova a registrare
+      final result = await authService.signUp(email: email, password: password, username: username);
 
-      // 3. SE result è null, vuol dire che c'è stato un errore nel Service (es. permessi DB)
-      if (result == null) {
+      // SE result è null, vuol dire che c'è stato un errore nel Service (es. permessi DB)
+      if (result == null)
+      {
         messenger.showSnackBar(const SnackBar(content: Text("Errore salvataggio dati. Controlla connessione o regole Firebase.")));
-        return; // FERMATI QUI! Non navigare.
+        return;
       }
 
-      // 4. Se siamo qui, è andato tutto bene.
-      // Non serve fare pushAndRemoveUntil perché c'è l'AuthGate che ascolta!
-      // Ma se vuoi essere sicuro, puoi lasciare il pop per tornare indietro
-      if (mounted) {
-         // Chiudiamo la tastiera
-         FocusScope.of(context).unfocus(); 
-         // AuthGate nel main.dart vedrà il login e cambierà pagina da solo.
-         // Possiamo solo fare un pop per chiudere la pagina di registrazione.
-         navigator.pop(); 
-      }
+      navigator.pushAndRemoveUntil(MaterialPageRoute(builder: (context) => const MainNavigation()), (route) => false,);
 
     } catch (e) {
       messenger.showSnackBar(SnackBar(content: Text("Eccezione: $e")));
@@ -91,7 +83,7 @@ class _SignUpPageState extends State<SignUpPage>
   @override
   Widget build(BuildContext context)
   {
-    final textTheme = Theme.of(context).textTheme;
+    final theme = Theme.of(context);
 
     return Scaffold
     (
@@ -102,67 +94,71 @@ class _SignUpPageState extends State<SignUpPage>
         children:
         [
           const TopBarLogo(),
-
-          const SizedBox(height: 50),
+          const SizedBox(height: 40),
           Expanded
           (
             child:
-            Center
+            SingleChildScrollView
             (
               child:
-              Column
+              Padding
               (
-                mainAxisSize: MainAxisSize.min,
-                children:
-                [
-                  Text("Registrazione", style: textTheme.headlineMedium),
+                padding: const EdgeInsets.symmetric(horizontal: 24),
+                child:
+                Column
+                (
+                  children:
+                  [
+                    Text("Registrazione", style: theme.textTheme.headlineMedium),
+                    const SizedBox(height: 50),
 
-                  const SizedBox(height: 32),
-                  CineGlassTextField
+                    Container
+                      (
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration( border: Border.all(color: theme.colorScheme.outline.withAlpha(77)), borderRadius: BorderRadius.circular(12),),
+                      child:
+                      Column
+                      (
+                        children:
+                        [
+                          CineGlassTextField(hint: "Username", controller: usernameController),
+                          const SizedBox(height: 16),
+
+                          CineGlassTextField(hint: "Email", controller: emailController),
+                          const SizedBox(height: 16),
+
+                          CineGlassTextField(hint: "Password", obscure: true, controller: passwordController),
+                          const SizedBox(height: 16),
+
+                          CineGlassTextField(hint: "Conferma password", obscure: true, controller: confirmPasswordController),
+                        ],
+                      ),
+                    ),
+
+                    const SizedBox(height: 30),
+                    CineGlassButton(label: "Crea account", onTap: () => _signUp(context)),
+
+                    const SizedBox(height: 24),
+
+                    // Reinderizzamento Login
+                    GestureDetector
                     (
-                    hint: "Username",
-                    controller: usernameController,
-                  ),
-                  const SizedBox(height: 32),
-                  CineGlassTextField
-                  (
-                    hint: "Email",
-                    controller: emailController,
-                  ),
-
-                  const SizedBox(height: 16),
-                  CineGlassTextField
-                  (
-                    hint: "Password",
-                    obscure: true,
-                    controller: passwordController,
-                  ),
-
-                  const SizedBox(height: 16),
-                  CineGlassTextField
-                  (
-                    hint: "Conferma password",
-                    obscure: true,
-                    controller: confirmPasswordController,
-                  ),
-
-                  const SizedBox(height: 32),
-                  CineGlassButton(label: "Crea account", onTap:() {_signUp(context);}),
-                ],
+                      onTap: () => Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const LoginPage())),
+                      child: Row
+                      (
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children:
+                        [
+                          Text("Hai un Account? ", style: TextStyle(color: theme.colorScheme.onSurface.withAlpha(178), fontSize: 14,),),
+                          Text("fai il Login", style: TextStyle(color: theme.colorScheme.primary, fontWeight: FontWeight.bold, fontSize: 14,),),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
           ),
-
-          //Padding
-          //(
-          //  padding: const EdgeInsets.only(left: 20, bottom: 20),
-          //  child:
-          //  CircleButton
-          //  (
-          //    icon: Icons.arrow_back,
-          //    onTap: () => Navigator.pop(context),
-          //  ),
-          //),
         ],
       ),
     );

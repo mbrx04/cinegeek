@@ -12,44 +12,45 @@ class NotificationService {
 
   Future<void> init({bool isBackground = false}) async
   {
-
-    //Inizializza i fusi orari -> è obbligatorio per notifiche schedulate
     tz.initializeTimeZones();
 
     const AndroidInitializationSettings initializationSettingsAndroid =
     AndroidInitializationSettings('@mipmap/ic_launcher');
 
-    const InitializationSettings initializationSettings = InitializationSettings(
-      android: initializationSettingsAndroid,
-    );
+    const DarwinInitializationSettings initializationSettingsDarwin =
+    DarwinInitializationSettings(requestAlertPermission: true, requestBadgePermission: true, requestSoundPermission: true,);
 
-    // Il comando initialize deve contenere la logica del click
-    await _notificationsPlugin.initialize
-      (
-      initializationSettings,
-      onDidReceiveNotificationResponse: (NotificationResponse response) {
-        final payload = response.payload;
-        if (payload == "daily_review_prompt"){
-          navigatorKey.currentState?.push(
-            MaterialPageRoute(
+    const InitializationSettings initializationSettings = InitializationSettings(android: initializationSettingsAndroid, iOS: initializationSettingsDarwin,);
+
+    await _notificationsPlugin.initialize(initializationSettings, onDidReceiveNotificationResponse: (NotificationResponse response)
+        {
+          final payload = response.payload;
+          if (payload == "daily_review_prompt")
+          {
+            navigatorKey.currentState?.push(
+              MaterialPageRoute(
                 builder: (_) => const ReviewsPage(),
-            ),
-          );
+              ),
+            );
+          }
         }
-      }
     );
-
 
     print("[NotificationService] Inizializzato (Background: $isBackground)");
 
     if (!isBackground)
     {
-      final androidImplementation = _notificationsPlugin
-          .resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>();
-
+      final androidImplementation = _notificationsPlugin.resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>();
       if (androidImplementation != null)
       {
         await androidImplementation.requestNotificationsPermission();
+      }
+
+      final iosImplementation = _notificationsPlugin.resolvePlatformSpecificImplementation<IOSFlutterLocalNotificationsPlugin>();
+
+      if (iosImplementation != null)
+      {
+        await iosImplementation.requestPermissions(alert: true, badge: true, sound: true,);
       }
     }
   }
