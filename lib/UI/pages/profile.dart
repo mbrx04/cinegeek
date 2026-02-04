@@ -114,7 +114,14 @@ class _ProfileState extends State<Profile> {
                     icon: Icons.visibility,
                     onTap: ()
                     {
-                      Navigator.push(context,MaterialPageRoute(builder: (_) => const WatchedPage()));
+                      Navigator.push(context,MaterialPageRoute(
+                          builder: (_) => MovieGridPage(
+                              userId: _currentUser!.uid,
+                              title: 'Guardati',
+                              type: MovieCollectionType.watched,
+                          ),
+                        ),
+                      );
                     },
                   ),
 

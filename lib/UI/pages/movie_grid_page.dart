@@ -6,6 +6,7 @@ import '../pages/movie_detail.dart';
 enum MovieCollectionType {
   watchlist,
   liked,
+  watched,
 }
 
 class MovieGridPage extends StatefulWidget {
@@ -26,12 +27,24 @@ class MovieGridPage extends StatefulWidget {
 
 class _MovieGridPageState extends State<MovieGridPage> {
   
-  //collega i dati in live
+  //Restituisce lo stream Firestore corretto in base al tipo di collezione
   Stream<QuerySnapshot> _getMoviesStream() {
-    //decide se guardare la watchlist o la liked
-    String collectionName = widget.type == MovieCollectionType.watchlist 
-        ? 'watchlist' 
-        : 'liked';
+    late final String collectionName;
+
+    //Scelta della collezione Firestore
+    switch (widget.type){
+      case MovieCollectionType.watchlist:
+      collectionName = 'watchlist';
+      break;
+
+      case MovieCollectionType.liked:
+        collectionName = 'liked';
+        break;
+
+      case MovieCollectionType.watched:
+        collectionName = 'watched';
+        break;
+    }
 
     return FirebaseFirestore.instance
         .collection('users')
@@ -83,7 +96,9 @@ class _MovieGridPageState extends State<MovieGridPage> {
                   Icon(
                     widget.type == MovieCollectionType.watchlist 
                       ? Icons.bookmark_border 
-                      : Icons.favorite_border,
+                      : widget.type == MovieCollectionType.liked
+                        ? Icons.favorite_border
+                        : Icons.visibility_outlined,
                     size: 80,
                     color: Theme.of(context).iconTheme.color?.withOpacity(0.3),
                   ),
@@ -125,7 +140,7 @@ class _MovieGridPageState extends State<MovieGridPage> {
                 releaseDate: data['releaseDate'] ?? '',
               );
 
-              final String heroTag = 'grid_list_${movie.id}'; //per fare l'animazione all'apertura
+              final String heroTag = 'grid_list_${widget.type}_${movie.id}'; //per fare l'animazione all'apertura
 
               return GestureDetector(
                 onTap: () {
