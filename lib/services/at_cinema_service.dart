@@ -18,7 +18,7 @@ class AtCinemaService
   {
     try
     {
-      final p = await Geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.high);
+      final p = await Geolocator.getCurrentPosition();
 
       bool near = await _isNearCinema(p);
       if (!near) return false;
@@ -40,7 +40,7 @@ class AtCinemaService
   {
     try
     {
-      final p = await Geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.high);
+      final p = await Geolocator.getCurrentPosition();
 
       if (await _isNearCinema(p))
       {

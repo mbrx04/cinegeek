@@ -61,8 +61,7 @@ class WeekendContextManager {
       if (permission == LocationPermission.denied) return;
     }
 
-    Position userPosition = await Geolocator.getCurrentPosition(
-        desiredAccuracy: LocationAccuracy.high);
+    Position userPosition = await Geolocator.getCurrentPosition();
 
     print("[WeekendManager] posizione attuale: ${userPosition.latitude}, ${userPosition.longitude}");
 
