@@ -1,7 +1,6 @@
 import 'package:cinegeek/UI/pages/LogInSignUp/log_in_page.dart';
 import 'package:cinegeek/UI/pages/friends_page.dart';
 import 'package:cinegeek/UI/pages/settings.dart';
-import 'package:cinegeek/UI/pages/watched.dart';
 import 'package:cinegeek/UI/widgets/top_bar.dart';
 import 'package:flutter/material.dart';
 import '../../model/app_user.dart';
